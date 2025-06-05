@@ -106,3 +106,153 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## GitHub API Data & Scoring Logic
+
+### Data Collection
+
+| Category | Data Points | Description |
+|----------|-------------|-------------|
+| Profile | Username, Name, Bio, Location | Basic user information |
+| | Public Repos, Followers, Following | Social & activity metrics |
+| | Created At, Company, Email | Additional profile data |
+| Repository | Name, Description, Language | Basic repository info |
+| | Stars, Forks, Topics | Repository engagement metrics |
+| | Size, Is Private, Updated At | Repository metadata |
+| | Commits (last 50 per repo) | Recent commit history |
+| Languages | Name, Bytes, Percentage | Language usage statistics |
+| Activity | Last Commit Date | Most recent contribution |
+| | Commit Frequency | Activity level classification |
+| | Preferred Hours | Peak coding hours (0-23) |
+| | Timezone Pattern | Day/Night/Mixed activity |
+| | Activity Consistency | Regular contribution pattern |
+
+### Scoring Calculations
+
+#### 1. Activity Score (0-100)
+- **Base Score (70 points max)**
+  - Commit Count: Up to 35 points (scaled by commits/100)
+  - Repository Activity: Up to 20 points (active repos / total repos)
+  - Consistency: Up to 15 points (based on repo count)
+- **Activity Pattern Bonus (30 points max)**
+  - Recency Bonus: Up to 10 points (based on last commit date)
+  - Frequency Bonus: Up to 10 points (very-high: 10, high: 8, moderate: 6, low: 3, very-low: 0)
+  - Consistency Bonus: Up to 10 points (based on regular activity)
+
+#### 2. Collaboration Score (0-100)
+- **Pull Request Activity**: Based on number of PRs
+- **Team Size**: Number of repository contributors
+- **Network Effect**: Followers + Following count
+- **Bonus Points**:
+  - +20 if collaboration score > 60
+  - +10 if networking (followers + following) > 10
+
+#### 3. Code Quality Score (0-100)
+- **Repository Metrics**
+  - Stars per Repository (×2 points)
+  - Forks per Repository (×2 points)
+  - Documentation (20 points max)
+    - Repository descriptions: Up to 20 points
+  - Organization (20 points max)
+    - Use of topics/tags: Up to 20 points
+- **Profile Completeness (20 points)**
+  - Bio: 10 points
+  - Location: 5 points
+  - Company: 5 points
+
+#### 4. Compatibility Calculation
+- **Overall Score** = Weighted average of:
+  - Technical Compatibility (35%): Language & topic overlap
+  - Work Style Alignment (25%): Activity patterns & code quality
+  - Collaboration Readiness (25%): PR activity & team experience
+  - Timing Compatibility (15%): Timezone & schedule alignment
+
+### Activity Pattern Analysis
+
+#### Commit Frequency Classification
+```
+Commits per Week  | Classification
+-----------------|---------------
+≥ 10             | Very High
+≥ 5              | High
+≥ 2              | Moderate
+≥ 0.5            | Low
+< 0.5            | Very Low
+```
+
+#### Timezone Pattern Classification
+```
+Hours            | Classification
+-----------------|---------------
+9 AM - 6 PM     | Day-time
+10 PM - 6 AM    | Night-time
+Mixed Hours      | Mixed
+No Clear Pattern | Unknown
+```
+
+This data is used to generate compatibility insights and recommendations for pair programming partnerships.
+
+```
+📊 User A Analysis Summary:
+{
+  name: 'Aditya Kumar Puri',
+  activityScore: 67,
+  collaborationScore: 60,
+  codeQualityScore: 35,
+  activityPattern: {
+    lastCommitDate: '2025-05-31T19:01:38Z',
+    daysSinceLastCommit: 4,
+    commitFrequency: 'very-high',
+    preferredHours: [ 21, 22, 23 ],
+    weekdayActivity: 0.5217391304347826,
+    timezonePattern: 'mixed',
+    activityConsistency: 69,
+    monthlyCommits: [ [Object], [Object], [Object], [Object] ]
+  }
+}
+
+📊 User B Analysis Summary:
+{
+  name: 'ZeKe',
+  activityScore: 67,
+  collaborationScore: 60,
+  codeQualityScore: 29,
+  activityPattern: {
+    lastCommitDate: '2025-01-29T20:32:57Z',
+    daysSinceLastCommit: 126,
+    commitFrequency: 'very-low',
+    preferredHours: [ 14 ],
+    weekdayActivity: 0.6264367816091954,
+    timezonePattern: 'day-time',
+    activityConsistency: 40,
+    monthlyCommits: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object]
+    ]
+  }
+}
+
+🤝 Calculating compatibility...
+
+✨ Compatibility Results:
+{
+  overallScore: 61,
+  technicalCompatibility: 35,
+  workStyleAlignment: 97,
+  collaborationReadiness: 70,
+  strengths: [ 'Similar work styles and project complexity preferences' ],
+  challenges: [
+    'Limited technical overlap - may require more communication',
+    'One or both developers have been inactive recently'
+  ],
+  recommendations: [
+    'Focus on knowledge transfer and cross-training sessions',
+    'Verify current availability and commitment levels'
+  ]
+}
+
+```

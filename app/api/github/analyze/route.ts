@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { githubApi } from '@/lib/github-api'
-import { CompatibilityAnalysis, DeveloperAnalysis, ApiResponse } from '@/lib/types'
+import { githubApi, GitHubDataProcessor } from '@/lib/github-api'
+import { geminiAnalyzer } from '@/lib/gemini-api'
+import { DeveloperAnalysis, ApiResponse } from '@/lib/types'
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
     try {
+        // console.log('\n========== Enhanced GitHub Compatibility Analysis ==========')
         const { userA, userB } = await request.json()
 
         if (!userA || !userB) {
@@ -29,186 +31,108 @@ export async function POST(request: NextRequest) {
         }
 
         // Fetch analysis for both users in parallel
+        // console.log('\n🔍 Fetching GitHub data for both users...')
         const [analysisA, analysisB] = await Promise.all([
             githubApi.analyzeUser(userA),
             githubApi.analyzeUser(userB)
         ])
 
-        // Calculate compatibility
-        const compatibility = calculateCompatibility(analysisA, analysisB, userA, userB)
+        // console.log('\n📊 GitHub Data Summary:')
+        // console.log(`User A (${userA}):`, {
+        //     repos: analysisA.repositories.length,
+        //     languages: analysisA.languages.length,
+        //     lastCommit: analysisA.activityPattern.daysSinceLastCommit + ' days ago',
+        //     activityPattern: analysisA.activityPattern.timezonePattern
+        // })
+        // console.log(`User B (${userB}):`, {
+        //     repos: analysisB.repositories.length,
+        //     languages: analysisB.languages.length,
+        //     lastCommit: analysisB.activityPattern.daysSinceLastCommit + ' days ago',
+        //     activityPattern: analysisB.activityPattern.timezonePattern
+        // })
+
+        // Process data for LLM analysis
+        console.log('\n🔄 Processing data for AI analysis...')
+        const processedData = GitHubDataProcessor.processForLLM(analysisA, analysisB)
+
+        console.log('Processed technical profiles:')
+        console.log(`${userA}:`, processedData.userA.technical_profile.primary_languages)
+        console.log(`${userB}:`, processedData.userB.technical_profile.primary_languages)
+
+        // Create LLM prompt
+        const prompt = GitHubDataProcessor.createLLMPrompt(processedData)
+        console.log('\n📝 Generated AI prompt (length:', prompt.length, 'characters)')
+
+        // Get AI-powered compatibility analysis
+        console.log('\n🤖 Requesting AI compatibility analysis...')
+        const llmResult = await geminiAnalyzer.analyzeCompatibility(prompt)
+
+        // Create response structure compatible with existing frontend
+        const compatibilityResponse = {
+            overallScore: llmResult.compatibility_score,
+            technicalCompatibility: llmResult.technical_compatibility.score,
+            workStyleAlignment: llmResult.work_style_compatibility.score,
+            collaborationReadiness: llmResult.collaboration_compatibility.score,
+            strengths: llmResult.strengths,
+            challenges: llmResult.potential_challenges,
+            recommendations: [
+                ...llmResult.next_steps,
+                `Recommended project types: ${llmResult.recommended_collaboration_approach.project_types.join(', ')}`,
+                `Optimal schedule: ${llmResult.recommended_collaboration_approach.optimal_schedule}`,
+                `Communication method: ${llmResult.recommended_collaboration_approach.communication_method}`
+            ],
+            analysisDate: new Date().toISOString(),
+            developerA: userA,
+            developerB: userB,
+            // Additional AI insights
+            aiInsights: {
+                matchCategory: llmResult.match_category,
+                technicalDetails: llmResult.technical_compatibility,
+                collaborationDetails: llmResult.collaboration_compatibility,
+                workStyleDetails: llmResult.work_style_compatibility,
+                successPrediction: llmResult.success_prediction,
+                recommendedApproach: llmResult.recommended_collaboration_approach
+            }
+        }
+
+        // Generate enhanced LLM export
+        const llmExport = {
+            ...githubApi.exportForLLM(analysisA, analysisB, compatibilityResponse),
+            aiAnalysis: llmResult,
+            processedData: processedData,
+            prompt: prompt
+        }
+
+        console.log('\n✨ AI Compatibility Analysis Results:')
+        console.log(`Overall Score: ${llmResult.compatibility_score}/100 (${llmResult.match_category})`)
+        console.log(`Technical Compatibility: ${llmResult.technical_compatibility.score}/100`)
+        console.log(`Collaboration Compatibility: ${llmResult.collaboration_compatibility.score}/100`)
+        console.log(`Work Style Compatibility: ${llmResult.work_style_compatibility.score}/100`)
+        console.log('Key Strengths:', llmResult.strengths.slice(0, 2).join(', '))
+        console.log('Main Challenges:', llmResult.potential_challenges.slice(0, 2).join(', '))
+
+        console.log('\n========== End of AI Analysis ==========\n')
 
         return NextResponse.json({
             success: true,
             data: {
                 userA: analysisA,
                 userB: analysisB,
-                compatibility
+                compatibility: compatibilityResponse,
+                llmExport
             }
-        } as ApiResponse<{
-            userA: DeveloperAnalysis,
-            userB: DeveloperAnalysis,
-            compatibility: CompatibilityAnalysis
-        }>)
+        } as ApiResponse<any>)
 
     } catch (error: any) {
-        console.error('GitHub analysis error:', error)
+        console.error('\n❌ Error in AI-powered GitHub analysis:', error)
 
         return NextResponse.json({
             success: false,
             error: {
-                type: error.type || 'UNKNOWN_ERROR',
-                message: error.message || 'Failed to analyze GitHub users',
+                type: error.type || 'AI_ANALYSIS_ERROR',
+                message: error.message || 'Failed to analyze GitHub users with AI',
                 statusCode: 500
             }
         } as ApiResponse<null>, { status: 500 })
     }
-}
-
-function calculateCompatibility(
-    analysisA: DeveloperAnalysis,
-    analysisB: DeveloperAnalysis,
-    userA: string,
-    userB: string
-): CompatibilityAnalysis {
-    // 1. Technical Compatibility (Language overlap, tech stack similarity)
-    const technicalCompatibility = calculateTechnicalCompatibility(analysisA, analysisB)
-
-    // 2. Work Style Alignment (Activity patterns, commit frequency)
-    const workStyleAlignment = calculateWorkStyleAlignment(analysisA, analysisB)
-
-    // 3. Collaboration Readiness (PR activity, team experience)
-    const collaborationReadiness = calculateCollaborationReadiness(analysisA, analysisB)
-
-    // Overall score (weighted average)
-    const overallScore = Math.round(
-        (technicalCompatibility * 0.4) +
-        (workStyleAlignment * 0.3) +
-        (collaborationReadiness * 0.3)
-    )
-
-    // Generate insights
-    const { strengths, challenges, recommendations } = generateInsights(
-        analysisA, analysisB, technicalCompatibility, workStyleAlignment, collaborationReadiness
-    )
-
-    return {
-        overallScore,
-        technicalCompatibility,
-        workStyleAlignment,
-        collaborationReadiness,
-        strengths,
-        challenges,
-        recommendations,
-        analysisDate: new Date().toISOString(),
-        developerA: userA,
-        developerB: userB
-    }
-}
-
-function calculateTechnicalCompatibility(analysisA: DeveloperAnalysis, analysisB: DeveloperAnalysis): number {
-    const langA = new Set(analysisA.languages.map(l => l.name.toLowerCase()))
-    const langB = new Set(analysisB.languages.map(l => l.name.toLowerCase()))
-
-    // Calculate language overlap
-    const intersection = new Set([...langA].filter(x => langB.has(x)))
-    const union = new Set([...langA, ...langB])
-    const languageOverlap = union.size > 0 ? (intersection.size / union.size) * 100 : 0
-
-    // Calculate topic/domain overlap
-    const topicsA = new Set(analysisA.repositories.flatMap(r => r.topics).map(t => t.toLowerCase()))
-    const topicsB = new Set(analysisB.repositories.flatMap(r => r.topics).map(t => t.toLowerCase()))
-    const topicIntersection = new Set([...topicsA].filter(x => topicsB.has(x)))
-    const topicUnion = new Set([...topicsA, ...topicsB])
-    const topicOverlap = topicUnion.size > 0 ? (topicIntersection.size / topicUnion.size) * 100 : 0
-
-    // Weight: 70% languages, 30% topics
-    return Math.round((languageOverlap * 0.7) + (topicOverlap * 0.3))
-}
-
-function calculateWorkStyleAlignment(analysisA: DeveloperAnalysis, analysisB: DeveloperAnalysis): number {
-    // Compare activity scores (similar activity levels indicate better alignment)
-    const activityDiff = Math.abs(analysisA.activityScore - analysisB.activityScore)
-    const activityAlignment = Math.max(0, 100 - activityDiff)
-
-    // Compare code quality scores
-    const qualityDiff = Math.abs(analysisA.codeQualityScore - analysisB.codeQualityScore)
-    const qualityAlignment = Math.max(0, 100 - qualityDiff)
-
-    // Compare repository sizes (project complexity preference)
-    const avgSizeA = analysisA.repositories.reduce((sum, r) => sum + r.size, 0) / analysisA.repositories.length
-    const avgSizeB = analysisB.repositories.reduce((sum, r) => sum + r.size, 0) / analysisB.repositories.length
-    const sizeDiff = Math.abs(Math.log10(avgSizeA + 1) - Math.log10(avgSizeB + 1))
-    const sizeAlignment = Math.max(0, 100 - (sizeDiff * 20))
-
-    // Weight the factors
-    return Math.round((activityAlignment * 0.4) + (qualityAlignment * 0.3) + (sizeAlignment * 0.3))
-}
-
-function calculateCollaborationReadiness(analysisA: DeveloperAnalysis, analysisB: DeveloperAnalysis): number {
-    // Average their collaboration scores
-    const avgCollabScore = (analysisA.collaborationScore + analysisB.collaborationScore) / 2
-
-    // Bonus for both having good collaboration scores
-    const bothCollaborative = analysisA.collaborationScore > 60 && analysisB.collaborationScore > 60 ? 20 : 0
-
-    // Consider follower/following ratio as networking indicator
-    const networkingA = analysisA.profile.followers + analysisA.profile.following
-    const networkingB = analysisB.profile.followers + analysisB.profile.following
-    const networkingBonus = (networkingA > 10 && networkingB > 10) ? 10 : 0
-
-    return Math.min(100, Math.round(avgCollabScore + bothCollaborative + networkingBonus))
-}
-
-function generateInsights(
-    analysisA: DeveloperAnalysis,
-    analysisB: DeveloperAnalysis,
-    technical: number,
-    workStyle: number,
-    collaboration: number
-) {
-    const strengths: string[] = []
-    const challenges: string[] = []
-    const recommendations: string[] = []
-
-    // Technical strengths/challenges
-    if (technical > 70) {
-        strengths.push("Strong technical overlap in programming languages and domains")
-        recommendations.push("Leverage shared expertise to tackle complex technical challenges together")
-    } else if (technical < 40) {
-        challenges.push("Limited technical overlap - may require more communication to align on technologies")
-        recommendations.push("Consider this an opportunity for cross-learning and knowledge transfer")
-    }
-
-    // Work style analysis
-    if (workStyle > 70) {
-        strengths.push("Similar work styles and project complexity preferences")
-    } else if (workStyle < 40) {
-        challenges.push("Different work styles may require adjustment period")
-        recommendations.push("Establish clear communication protocols and work scheduling")
-    }
-
-    // Collaboration analysis
-    if (collaboration > 70) {
-        strengths.push("Both developers show strong collaboration and teamwork indicators")
-    } else if (collaboration < 40) {
-        challenges.push("Limited collaborative experience visible in public repositories")
-        recommendations.push("Start with smaller, well-defined tasks to build collaboration rhythm")
-    }
-
-    // Activity level analysis
-    const activityGap = Math.abs(analysisA.activityScore - analysisB.activityScore)
-    if (activityGap > 30) {
-        challenges.push("Significant difference in development activity levels")
-        recommendations.push("Discuss availability and establish realistic collaboration expectations")
-    }
-
-    // Add general recommendations
-    if (recommendations.length === 0) {
-        recommendations.push("Start with a small project to test collaboration dynamics")
-    }
-
-    recommendations.push("Use pair programming sessions to build shared understanding")
-    recommendations.push("Regular check-ins to ensure alignment and address any issues early")
-
-    return { strengths, challenges, recommendations }
 } 

@@ -1,8 +1,8 @@
 export interface GitHubProfile {
     username: string
-    name: string | null
-    bio: string | null
-    location: string | null
+    name: string
+    bio: string
+    location: string
     publicRepos: number
     followers: number
     following: number
@@ -12,6 +12,9 @@ export interface GitHubProfile {
     email: string | null
     hireable: boolean | null
     twitterUsername: string | null
+    blog?: string
+    publicGists?: number
+    updatedAt?: string
 }
 
 export interface RepositoryData {

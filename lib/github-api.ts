@@ -2,20 +2,44 @@ import axios, { AxiosResponse } from 'axios'
 import { GitHubProfile, RepositoryData, CommitData, LanguageStats, DeveloperAnalysis, GitHubApiError } from './types'
 
 const GITHUB_API_BASE = 'https://api.github.com'
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN // You'll need to add this to your .env.local
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN
 
 // Rate limiting helper
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
+interface ActivityPattern {
+    lastCommitDate: string | null
+    daysSinceLastCommit: number
+    commitFrequency: 'very-high' | 'high' | 'moderate' | 'low' | 'very-low'
+    preferredHours: number[] // Hours of day when most active (0-23)
+    weekdayActivity: number // 0-1 ratio of weekday vs weekend commits
+    timezonePattern: 'day-time' | 'night-time' | 'mixed' | 'unknown'
+    activityConsistency: number // 0-100 score for how consistent their activity is
+    monthlyCommits: { month: string, count: number }[]
+    averageCommitHour: number
+    commitMessageLength: number
+    hasRecentActivity: boolean
+}
+
+interface CommitTiming {
+    hour: number
+    date: string
+    isWeekday: boolean
+    message: string
+    messageLength: number
+}
+
 class GitHubApiService {
     private readonly headers: Record<string, string>
+    private readonly userTimezone: string
 
-    constructor() {
+    constructor(userTimezone = 'Asia/Kolkata') { // Default to India timezone
         this.headers = {
             'Accept': 'application/vnd.github.v3+json',
             'User-Agent': 'GitCompat-App',
             ...(GITHUB_TOKEN && { 'Authorization': `token ${GITHUB_TOKEN}` })
         }
+        this.userTimezone = userTimezone
     }
 
     private async makeRequest<T>(url: string, retries = 3): Promise<T> {
@@ -24,10 +48,9 @@ class GitHubApiService {
             return response.data
         } catch (error: any) {
             if (error.response?.status === 403 && retries > 0) {
-                // Rate limited, wait and retry
                 const resetTime = error.response.headers['x-ratelimit-reset']
                 const waitTime = resetTime ? (parseInt(resetTime) * 1000 - Date.now()) : 60000
-                await delay(Math.min(waitTime, 60000)) // Max 1 minute wait
+                await delay(Math.min(waitTime, 60000))
                 return this.makeRequest<T>(url, retries - 1)
             }
             throw this.handleApiError(error)
@@ -55,24 +78,216 @@ class GitHubApiService {
         }
     }
 
-    async fetchUserProfile(username: string): Promise<GitHubProfile> {
-        const url = `${GITHUB_API_BASE}/users/${username}`
-        const userData = await this.makeRequest<any>(url)
+    private analyzeCommitTiming(commits: any[]): ActivityPattern {
+        if (commits.length === 0) {
+            return {
+                lastCommitDate: null,
+                daysSinceLastCommit: 999,
+                commitFrequency: 'very-low',
+                preferredHours: [],
+                weekdayActivity: 0.5,
+                timezonePattern: 'unknown',
+                activityConsistency: 0,
+                monthlyCommits: [],
+                averageCommitHour: 12,
+                commitMessageLength: 0,
+                hasRecentActivity: false
+            }
+        }
+
+        // Parse commit timings with enhanced analysis
+        const commitTimings: CommitTiming[] = commits.map(commit => {
+            const date = new Date(commit.commit.author.date)
+            const userDate = new Date(date.toLocaleString("en-US", { timeZone: this.userTimezone }))
+            const dayOfWeek = userDate.getDay()
+
+            return {
+                hour: userDate.getHours(),
+                date: userDate.toISOString().split('T')[0],
+                isWeekday: dayOfWeek >= 1 && dayOfWeek <= 5,
+                message: commit.commit.message,
+                messageLength: commit.commit.message.length
+            }
+        })
+
+        // Last commit analysis
+        const sortedCommits = commits.sort((a, b) =>
+            new Date(b.commit.author.date).getTime() - new Date(a.commit.author.date).getTime()
+        )
+        const lastCommitDate = sortedCommits[0]?.commit.author.date
+        const daysSinceLastCommit = lastCommitDate
+            ? Math.floor((Date.now() - new Date(lastCommitDate).getTime()) / (1000 * 60 * 60 * 24))
+            : 999
+
+        // Enhanced: Commit frequency analysis
+        const commitFrequency = this.calculateCommitFrequency(commits.length, daysSinceLastCommit)
+
+        // Enhanced: Hour preference analysis
+        const hourCounts = new Array(24).fill(0)
+        commitTimings.forEach(timing => hourCounts[timing.hour]++)
+        const preferredHours = hourCounts
+            .map((count, hour) => ({ hour, count }))
+            .filter(item => item.count > commitTimings.length * 0.1)
+            .map(item => item.hour)
+
+        // Enhanced: Average commit hour
+        const averageCommitHour = commitTimings.length > 0
+            ? Math.round(commitTimings.reduce((sum, t) => sum + t.hour, 0) / commitTimings.length)
+            : 12
+
+        // Weekday vs weekend analysis
+        const weekdayCommits = commitTimings.filter(t => t.isWeekday).length
+        const weekdayActivity = commitTimings.length > 0 ? weekdayCommits / commitTimings.length : 0.5
+
+        // Timezone pattern analysis (India time)
+        const timezonePattern = this.analyzeTimezonePattern(preferredHours)
+
+        // Activity consistency (based on commit spread over time)
+        const activityConsistency = this.calculateActivityConsistency(commitTimings)
+
+        // Monthly commit distribution
+        const monthlyCommits = this.calculateMonthlyDistribution(commitTimings)
+
+        // Enhanced: Additional metrics
+        const averageMessageLength = commitTimings.length > 0
+            ? commitTimings.reduce((sum, t) => sum + (t.messageLength || 0), 0) / commitTimings.length
+            : 0
+
+        const hasRecentActivity = daysSinceLastCommit <= 7
+
+        // console.log(`    Enhanced Activity Metrics:`, {
+        //     averageCommitHour,
+        //     averageMessageLength: Math.round(averageMessageLength),
+        //     hasRecentActivity,
+        //     workingHoursCommits: commitTimings.filter(t => t.hour >= 9 && t.hour <= 17).length,
+        //     eveningCommits: commitTimings.filter(t => t.hour >= 18 && t.hour <= 23).length
+        // })
 
         return {
-            username: userData.login,
-            name: userData.name,
-            bio: userData.bio,
-            location: userData.location,
-            publicRepos: userData.public_repos,
-            followers: userData.followers,
-            following: userData.following,
-            avatarUrl: userData.avatar_url,
-            company: userData.company,
-            createdAt: userData.created_at,
-            email: userData.email,
-            hireable: userData.hireable,
-            twitterUsername: userData.twitter_username
+            lastCommitDate,
+            daysSinceLastCommit,
+            commitFrequency,
+            preferredHours,
+            weekdayActivity,
+            timezonePattern,
+            activityConsistency,
+            monthlyCommits,
+            averageCommitHour,
+            commitMessageLength: Math.round(averageMessageLength),
+            hasRecentActivity
+        }
+    }
+
+    private calculateCommitFrequency(commitCount: number, daysSince: number): ActivityPattern['commitFrequency'] {
+        if (daysSince > 30) return 'very-low'
+
+        const commitsPerWeek = commitCount / Math.max(daysSince / 7, 1)
+        if (commitsPerWeek >= 10) return 'very-high'
+        if (commitsPerWeek >= 5) return 'high'
+        if (commitsPerWeek >= 2) return 'moderate'
+        if (commitsPerWeek >= 0.5) return 'low'
+        return 'very-low'
+    }
+
+    private analyzeTimezonePattern(preferredHours: number[]): ActivityPattern['timezonePattern'] {
+        if (preferredHours.length === 0) return 'unknown'
+
+        const dayTimeHours = preferredHours.filter(h => h >= 9 && h <= 18).length
+        const nightTimeHours = preferredHours.filter(h => h >= 22 || h <= 6).length
+        const totalHours = preferredHours.length
+
+        if (dayTimeHours / totalHours > 0.7) return 'day-time'
+        if (nightTimeHours / totalHours > 0.7) return 'night-time'
+        return 'mixed'
+    }
+
+    private calculateActivityConsistency(commitTimings: CommitTiming[]): number {
+        if (commitTimings.length < 5) return 0
+
+        // Group commits by week
+        const weeklyCommits = new Map<string, number>()
+        commitTimings.forEach(timing => {
+            const date = new Date(timing.date)
+            const weekStart = new Date(date.setDate(date.getDate() - date.getDay()))
+            const weekKey = weekStart.toISOString().split('T')[0]
+            weeklyCommits.set(weekKey, (weeklyCommits.get(weekKey) || 0) + 1)
+        })
+
+        const weeks = Array.from(weeklyCommits.values())
+        if (weeks.length < 2) return 0
+
+        // Calculate coefficient of variation (lower = more consistent)
+        const mean = weeks.reduce((sum, count) => sum + count, 0) / weeks.length
+        const variance = weeks.reduce((sum, count) => sum + Math.pow(count - mean, 2), 0) / weeks.length
+        const cv = Math.sqrt(variance) / mean
+
+        // Convert to 0-100 scale (lower CV = higher consistency)
+        return Math.max(0, Math.round((1 - Math.min(cv, 2) / 2) * 100))
+    }
+
+    private calculateMonthlyDistribution(commitTimings: CommitTiming[]): { month: string, count: number }[] {
+        const monthCounts = new Map<string, number>()
+        commitTimings.forEach(timing => {
+            const month = timing.date.substring(0, 7) // YYYY-MM format
+            monthCounts.set(month, (monthCounts.get(month) || 0) + 1)
+        })
+
+        return Array.from(monthCounts.entries())
+            .map(([month, count]) => ({ month, count }))
+            .sort((a, b) => b.month.localeCompare(a.month))
+            .slice(0, 12) // Last 12 months
+    }
+
+    private calculateRecencyBonus(daysSince: number): number {
+        if (daysSince <= 1) return 10
+        if (daysSince <= 7) return 8
+        if (daysSince <= 14) return 6
+        if (daysSince <= 30) return 4
+        if (daysSince <= 90) return 2
+        return 0
+    }
+
+    private calculateFrequencyBonus(frequency: ActivityPattern['commitFrequency']): number {
+        switch (frequency) {
+            case 'very-high': return 10
+            case 'high': return 8
+            case 'moderate': return 6
+            case 'low': return 3
+            case 'very-low': return 0
+            default: return 0
+        }
+    }
+
+    private async fetchUserProfile(username: string): Promise<GitHubProfile> {
+        try {
+            const response = await this.makeRequest(`https://api.github.com/users/${username}`) as any
+            return {
+                username: response.login,
+                name: response.name || '',
+                bio: response.bio || '',
+                location: response.location || '',
+                publicRepos: response.public_repos,
+                followers: response.followers,
+                following: response.following,
+                avatarUrl: response.avatar_url,
+                company: response.company,
+                createdAt: response.created_at,
+                email: response.email,
+                hireable: response.hireable,
+                twitterUsername: response.twitter_username,
+                blog: response.blog || '',
+                publicGists: response.public_gists || 0,
+                updatedAt: response.updated_at || ''
+            }
+        } catch (error: any) {
+            if (error.type === 'USER_NOT_FOUND') {
+                throw error
+            }
+            throw {
+                type: 'API_ERROR',
+                message: `Failed to fetch profile for ${username}`,
+                statusCode: 500
+            }
         }
     }
 
@@ -81,29 +296,51 @@ class GitHubApiService {
         return this.makeRequest<any[]>(url)
     }
 
-    async fetchRepositoryLanguages(owner: string, repo: string): Promise<Record<string, number>> {
-        const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/languages`
-        return this.makeRequest<Record<string, number>>(url)
-    }
-
-    async fetchRepositoryCommits(owner: string, repo: string, count = 100): Promise<any[]> {
-        const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/commits?per_page=${count}`
+    private async fetchRepositoryLanguages(owner: string, repo: string): Promise<Record<string, number>> {
         try {
-            return await this.makeRequest<any[]>(url)
-        } catch (error: any) {
-            // If commits are not accessible (private repo, etc.), return empty array
-            if (error.type === 'USER_NOT_FOUND') {
-                return []
-            }
-            throw error
+            const response = await this.makeRequest(`https://api.github.com/repos/${owner}/${repo}/languages`) as Record<string, number>
+            const totalBytes = Object.values(response).reduce((sum: number, bytes: number) => sum + bytes, 0)
+            const languagePercentages = Object.entries(response).map(([lang, bytes]: [string, number]) => ({
+                language: lang,
+                bytes: bytes,
+                percentage: totalBytes > 0 ? ((bytes / totalBytes) * 100).toFixed(1) : '0.0'
+            }))
+            // console.log(`    Language Breakdown:`, languagePercentages)
+            return response
+        } catch (error) {
+            // console.warn(`Failed to fetch languages for ${owner}/${repo}:`, error)
+            return {}
         }
     }
 
-    async fetchRepositoryPullRequests(owner: string, repo: string): Promise<any[]> {
-        const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/pulls?state=all&per_page=100`
+    private async fetchRepositoryCommits(owner: string, repo: string, limit: number = 100): Promise<any[]> {
         try {
-            return await this.makeRequest<any[]>(url)
-        } catch (error: any) {
+            const response = await this.makeRequest(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=${limit}&author=${owner}`) as any[]
+            // console.log(`    Recent Commits:`, response.slice(0, 5).map((commit: any) => ({
+            //     date: commit.commit.author.date,
+            //     message: commit.commit.message.split('\n')[0], // First line only
+            //     author: commit.commit.author.name,
+            //     hour: new Date(commit.commit.author.date).getHours()
+            // })))
+            return response
+        } catch (error) {
+            // console.warn(`Failed to fetch commits for ${owner}/${repo}:`, error)
+            return []
+        }
+    }
+
+    private async fetchRepositoryPullRequests(owner: string, repo: string): Promise<any[]> {
+        try {
+            const response = await this.makeRequest(`https://api.github.com/repos/${owner}/${repo}/pulls?state=all&per_page=100`) as any[]
+            // console.log(`    Pull Requests Details:`, response.map((pr: any) => ({
+            //     state: pr.state,
+            //     title: pr.title,
+            //     merged: pr.merged_at ? 'merged' : 'not_merged',
+            //     created_at: pr.created_at
+            // })))
+            return response
+        } catch (error) {
+            // console.warn(`Failed to fetch pull requests for ${owner}/${repo}:`, error)
             return []
         }
     }
@@ -117,18 +354,49 @@ class GitHubApiService {
         }
     }
 
-    async fetchRepositoryDetails(owner: string, repo: string): Promise<any> {
-        const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}`
-        return this.makeRequest<any>(url)
+    private async fetchRepositoryDetails(owner: string, repo: string): Promise<any> {
+        try {
+            const response = await this.makeRequest(`https://api.github.com/repos/${owner}/${repo}`) as any
+            // Enhanced: Log more repository details
+            // console.log(`    Repository Details:`, {
+            //     size: response.size,
+            //     stars: response.stargazers_count,
+            //     forks: response.forks_count,
+            //     openIssues: response.open_issues_count,
+            //     license: response.license?.name || 'none',
+            //     defaultBranch: response.default_branch,
+            //     hasWiki: response.has_wiki,
+            //     hasPages: response.has_pages
+            // })
+            return response
+        } catch (error) {
+            // console.warn(`Failed to fetch details for ${owner}/${repo}:`, error)
+            return null
+        }
     }
 
-    async analyzeUser(username: string): Promise<DeveloperAnalysis> {
+    async analyzeUser(username: string): Promise<DeveloperAnalysis & { activityPattern: ActivityPattern }> {
         try {
+            // console.log(`\n🔍 Starting GitHub API analysis for user: ${username}`)
+
             // 1. Fetch user profile
             const profile = await this.fetchUserProfile(username)
+            // console.log(`👤 Profile data for ${username}:`, {
+            //     name: profile.name,
+            //     bio: profile.bio,
+            //     location: profile.location,
+            //     publicRepos: profile.publicRepos,
+            //     followers: profile.followers,
+            //     following: profile.following,
+            //     company: profile.company
+            // })
 
             // 2. Fetch user repositories
             const repos = await this.fetchUserRepositories(username, 10)
+            // console.log(`📁 Found ${repos.length} repositories for ${username}:`)
+            // repos.forEach((repo, index) => {
+            //     console.log(`  ${index + 1}. ${repo.name} (${repo.language || 'No language'}) - ⭐${repo.stargazers_count} 🍴${repo.forks_count}`)
+            // })
 
             // 3. Process each repository for detailed analysis
             const repositoryData: RepositoryData[] = []
@@ -136,33 +404,39 @@ class GitHubApiService {
             let totalCommits = 0
             let totalPRs = 0
             let totalCollaborators = 0
+            let allCommits: any[] = []
 
-            for (const repo of repos) {
-                try {
-                    // Get repository details
+            // Enhanced repository analysis with detailed language and contributor data
+            // console.log(`\n📊 Processing repository details...`)
+            const repositoryDetails = await Promise.all(
+                repos.map(async (repo: any) => {
+                    // console.log(`\n  Processing: ${repo.name}`)
+
                     const repoDetails = await this.fetchRepositoryDetails(username, repo.name)
+                    // console.log(`    Topics: [${repoDetails.topics?.join(', ') || 'none'}]`)
 
-                    // Get languages
                     const languages = await this.fetchRepositoryLanguages(username, repo.name)
+                    // console.log(`    Languages:`, Object.keys(languages).map(lang =>
+                    //     `${lang}: ${languages[lang]} bytes`
+                    // ))
 
-                    // Aggregate languages
                     Object.entries(languages).forEach(([lang, bytes]) => {
                         languageMap.set(lang, (languageMap.get(lang) || 0) + bytes)
                     })
 
-                    // Get commits (limited to avoid rate limiting)
                     const commits = await this.fetchRepositoryCommits(username, repo.name, 50)
                     totalCommits += commits.length
+                    allCommits = [...allCommits, ...commits]
+                    // console.log(`    Commits: ${commits.length} found`)
 
-                    // Get pull requests
                     const prs = await this.fetchRepositoryPullRequests(username, repo.name)
                     totalPRs += prs.length
+                    // console.log(`    Pull Requests: ${prs.length}`)
 
-                    // Get contributors
                     const contributors = await this.fetchRepositoryContributors(username, repo.name)
                     totalCollaborators += contributors.length
+                    // console.log(`    Contributors: ${contributors.length}`)
 
-                    // Process commits data
                     const processedCommits: CommitData[] = commits.slice(0, 10).map(commit => ({
                         sha: commit.sha,
                         message: commit.commit.message,
@@ -172,7 +446,7 @@ class GitHubApiService {
                             date: commit.commit.author.date
                         },
                         stats: {
-                            additions: 0, // GitHub API doesn't provide this in commits endpoint
+                            additions: 0,
                             deletions: 0,
                             total: 0
                         }
@@ -193,15 +467,23 @@ class GitHubApiService {
                         url: repo.html_url
                     })
 
-                    // Add delay to avoid rate limiting
                     await delay(100)
-                } catch (error) {
-                    console.warn(`Failed to process repository ${repo.name}:`, error)
-                    // Continue with other repos
-                }
-            }
+                })
+            )
 
-            // 4. Calculate language statistics
+            // 4. Analyze activity patterns
+            // console.log(`\n⏰ Analyzing activity patterns from ${allCommits.length} total commits...`)
+            const activityPattern = this.analyzeCommitTiming(allCommits)
+            // console.log(`    Activity Pattern:`, {
+            //     lastCommitDate: activityPattern.lastCommitDate,
+            //     daysSinceLastCommit: activityPattern.daysSinceLastCommit,
+            //     commitFrequency: activityPattern.commitFrequency,
+            //     preferredHours: activityPattern.preferredHours,
+            //     timezonePattern: activityPattern.timezonePattern,
+            //     activityConsistency: activityPattern.activityConsistency
+            // })
+
+            // 5. Calculate language statistics
             const totalBytes = Array.from(languageMap.values()).reduce((sum, bytes) => sum + bytes, 0)
             const languages: LanguageStats[] = Array.from(languageMap.entries())
                 .map(([name, bytes]) => ({
@@ -212,10 +494,26 @@ class GitHubApiService {
                 .sort((a, b) => b.percentage - a.percentage)
                 .slice(0, 10)
 
-            // 5. Calculate scores
-            const activityScore = this.calculateActivityScore(totalCommits, repositoryData.length, profile.publicRepos)
+            // console.log(`\n🔤 Language distribution for ${username}:`)
+            // languages.slice(0, 5).forEach(lang => {
+            //     console.log(`    ${lang.name}: ${lang.percentage.toFixed(1)}% (${lang.bytes} bytes)`)
+            // })
+
+            // console.log(`\n📈 Summary stats for ${username}:`)
+            // console.log(`    Total commits analyzed: ${totalCommits}`)
+            // console.log(`    Total pull requests: ${totalPRs}`)
+            // console.log(`    Total collaborators: ${totalCollaborators}`)
+            // console.log(`    Active repositories: ${repositoryData.length}`)
+
+            // 6. Calculate scores (enhanced with activity patterns)
+            const activityScore = this.calculateActivityScore(totalCommits, repositoryData.length, profile.publicRepos, activityPattern)
             const collaborationScore = this.calculateCollaborationScore(totalPRs, totalCollaborators, repositoryData.length)
             const codeQualityScore = this.calculateCodeQualityScore(repositoryData, profile)
+
+            // console.log(`\n🎯 Calculated scores for ${username}:`)
+            // console.log(`    Activity Score: ${activityScore}/100`)
+            // console.log(`    Collaboration Score: ${collaborationScore}/100`)
+            // console.log(`    Code Quality Score: ${codeQualityScore}/100`)
 
             return {
                 profile,
@@ -223,41 +521,542 @@ class GitHubApiService {
                 languages,
                 activityScore,
                 collaborationScore,
-                codeQualityScore
+                codeQualityScore,
+                activityPattern
             }
         } catch (error: any) {
             throw error
         }
     }
 
-    private calculateActivityScore(commits: number, activeRepos: number, totalRepos: number): number {
-        // Score based on recent activity (0-100)
-        const commitScore = Math.min(commits / 100 * 50, 50) // Max 50 points for commits
-        const repoActivityScore = activeRepos > 0 ? (activeRepos / Math.max(totalRepos, 1)) * 30 : 0 // Max 30 points
-        const consistencyScore = totalRepos > 5 ? 20 : (totalRepos / 5) * 20 // Max 20 points for having multiple repos
+    private calculateActivityScore(commits: number, activeRepos: number, totalRepos: number, activityPattern: ActivityPattern): number {
+        // Enhanced: Base score (0-70 points)
+        const commitScore = Math.min(commits / 100 * 35, 35)
+        const repoActivityScore = activeRepos > 0 ? (activeRepos / Math.max(totalRepos, 1)) * 20 : 0
+        const consistencyScore = totalRepos > 5 ? 15 : (totalRepos / 5) * 15
 
-        return Math.round(commitScore + repoActivityScore + consistencyScore)
+        // Enhanced: Activity pattern bonuses (0-30 points)
+        const recencyBonus = this.calculateRecencyBonus(activityPattern.daysSinceLastCommit)
+        const frequencyBonus = this.calculateFrequencyBonus(activityPattern.commitFrequency)
+        const consistencyBonus = activityPattern.activityConsistency * 0.1
+
+        // Enhanced: Additional bonuses
+        const messageQualityBonus = activityPattern.commitMessageLength > 20 ? 5 : 0 // Good commit messages
+        const regularHoursBonus = activityPattern.timezonePattern === 'day-time' ? 3 : 0 // Regular working hours
+
+        const totalScore = commitScore + repoActivityScore + consistencyScore +
+            recencyBonus + frequencyBonus + consistencyBonus +
+            messageQualityBonus + regularHoursBonus
+
+        // console.log(`    Enhanced Activity Score Breakdown:`, {
+        //     commitScore: Math.round(commitScore),
+        //     repoActivityScore: Math.round(repoActivityScore),
+        //     consistencyScore: Math.round(consistencyScore),
+        //     recencyBonus: Math.round(recencyBonus),
+        //     frequencyBonus: Math.round(frequencyBonus),
+        //     messageQualityBonus,
+        //     regularHoursBonus
+        // })
+
+        return Math.round(Math.min(totalScore, 100))
     }
 
     private calculateCollaborationScore(prs: number, contributors: number, repos: number): number {
-        // Score based on collaboration indicators (0-100)
-        const prScore = Math.min(prs / 10 * 40, 40) // Max 40 points for PRs
-        const contributorScore = contributors > repos ? 40 : (contributors / Math.max(repos, 1)) * 40 // Max 40 points
-        const diversityScore = repos > 3 ? 20 : (repos / 3) * 20 // Max 20 points for repo diversity
+        const prScore = Math.min(prs / 10 * 40, 40)
+        const contributorScore = contributors > repos ? 40 : (contributors / Math.max(repos, 1)) * 40
+        const diversityScore = repos > 3 ? 20 : (repos / 3) * 20
 
         return Math.round(prScore + contributorScore + diversityScore)
     }
 
     private calculateCodeQualityScore(repos: RepositoryData[], profile: GitHubProfile): number {
-        // Score based on code quality indicators (0-100)
-        const starScore = repos.reduce((sum, repo) => sum + repo.stars, 0) / repos.length * 2 // Stars per repo
-        const forkScore = repos.reduce((sum, repo) => sum + repo.forks, 0) / repos.length * 2 // Forks per repo
-        const descriptionScore = repos.filter(repo => repo.description).length / repos.length * 20 // Documentation
-        const topicScore = repos.filter(repo => repo.topics.length > 0).length / repos.length * 20 // Organization
+        const starScore = repos.reduce((sum, repo) => sum + repo.stars, 0) / repos.length * 2
+        const forkScore = repos.reduce((sum, repo) => sum + repo.forks, 0) / repos.length * 2
+        const descriptionScore = repos.filter(repo => repo.description).length / repos.length * 20
+        const topicScore = repos.filter(repo => repo.topics.length > 0).length / repos.length * 20
         const profileScore = (profile.bio ? 10 : 0) + (profile.location ? 5 : 0) + (profile.company ? 5 : 0)
 
         return Math.round(Math.min(starScore + forkScore + descriptionScore + topicScore + profileScore, 100))
     }
+
+    // Method to export analysis for LLM processing
+    exportForLLM(analysisA: DeveloperAnalysis & { activityPattern: ActivityPattern },
+        analysisB: DeveloperAnalysis & { activityPattern: ActivityPattern },
+        compatibility: any): any {
+        return {
+            timestamp: new Date().toISOString(),
+            userTimezone: this.userTimezone,
+            analysis: {
+                developerA: {
+                    profile: {
+                        username: analysisA.profile.username,
+                        name: analysisA.profile.name,
+                        location: analysisA.profile.location,
+                        company: analysisA.profile.company,
+                        bio: analysisA.profile.bio,
+                        publicRepos: analysisA.profile.publicRepos,
+                        followers: analysisA.profile.followers,
+                        following: analysisA.profile.following
+                    },
+                    scores: {
+                        activity: analysisA.activityScore,
+                        collaboration: analysisA.collaborationScore,
+                        codeQuality: analysisA.codeQualityScore
+                    },
+                    activityPattern: analysisA.activityPattern,
+                    languages: analysisA.languages.slice(0, 5),
+                    topRepositories: analysisA.repositories.slice(0, 3).map(repo => ({
+                        name: repo.name,
+                        description: repo.description,
+                        language: repo.language,
+                        stars: repo.stars,
+                        forks: repo.forks,
+                        topics: repo.topics
+                    }))
+                },
+                developerB: {
+                    profile: {
+                        username: analysisB.profile.username,
+                        name: analysisB.profile.name,
+                        location: analysisB.profile.location,
+                        company: analysisB.profile.company,
+                        bio: analysisB.profile.bio,
+                        publicRepos: analysisB.profile.publicRepos,
+                        followers: analysisB.profile.followers,
+                        following: analysisB.profile.following
+                    },
+                    scores: {
+                        activity: analysisB.activityScore,
+                        collaboration: analysisB.collaborationScore,
+                        codeQuality: analysisB.codeQualityScore
+                    },
+                    activityPattern: analysisB.activityPattern,
+                    languages: analysisB.languages.slice(0, 5),
+                    topRepositories: analysisB.repositories.slice(0, 3).map(repo => ({
+                        name: repo.name,
+                        description: repo.description,
+                        language: repo.language,
+                        stars: repo.stars,
+                        forks: repo.forks,
+                        topics: repo.topics
+                    }))
+                }
+            },
+            compatibility: compatibility,
+            metadata: {
+                apiVersion: '1.0',
+                analysisType: 'pair-programming-compatibility',
+                totalRepositoriesAnalyzed: analysisA.repositories.length + analysisB.repositories.length,
+                totalCommitsAnalyzed: analysisA.repositories.reduce((sum, repo) => sum + repo.commits.length, 0) +
+                    analysisB.repositories.reduce((sum, repo) => sum + repo.commits.length, 0)
+            }
+        }
+    }
 }
 
-export const githubApi = new GitHubApiService() 
+export const githubApi = new GitHubApiService()
+
+// Enhanced Data Processing Functions for LLM Analysis
+interface ProcessedDeveloper {
+    username: string
+    profile: {
+        name: string
+        bio: string
+        location: string
+        experience_years: number
+        public_repos: number
+        followers: number
+        following: number
+        has_contact_info: boolean
+        company: string | null
+    }
+    technical_profile: {
+        primary_languages: Record<string, string>
+        technology_stack: string[]
+        project_complexity: string
+        total_stars_received: number
+        average_repo_size: number
+        most_used_topics: string[]
+    }
+    activity_patterns: {
+        commit_frequency: string
+        preferred_coding_hours: string
+        consistency_score: number
+        recent_activity_level: string
+        last_commit_days_ago: number
+        timezone_pattern: string
+        weekday_preference: string
+        monthly_activity_trend: string
+    }
+    collaboration_style: {
+        total_pull_requests: number
+        average_contributors_per_project: number
+        prefers_solo_vs_team: string
+        project_maintenance: string
+        community_engagement: string
+        fork_to_star_ratio: number
+    }
+}
+
+export class GitHubDataProcessor {
+    static processForLLM(
+        analysisA: DeveloperAnalysis & { activityPattern: ActivityPattern },
+        analysisB: DeveloperAnalysis & { activityPattern: ActivityPattern }
+    ): { userA: ProcessedDeveloper, userB: ProcessedDeveloper } {
+        return {
+            userA: this.processSingleDeveloper(analysisA),
+            userB: this.processSingleDeveloper(analysisB)
+        }
+    }
+
+    private static processSingleDeveloper(
+        analysis: DeveloperAnalysis & { activityPattern: ActivityPattern }
+    ): ProcessedDeveloper {
+        return {
+            username: analysis.profile.username,
+            profile: {
+                name: analysis.profile.name || 'Not provided',
+                bio: analysis.profile.bio || 'No bio available',
+                location: analysis.profile.location || 'Not specified',
+                experience_years: this.calculateExperienceYears(analysis.profile.createdAt),
+                public_repos: analysis.profile.publicRepos,
+                followers: analysis.profile.followers,
+                following: analysis.profile.following,
+                has_contact_info: !!(analysis.profile.email || analysis.profile.blog),
+                company: analysis.profile.company
+            },
+            technical_profile: {
+                primary_languages: this.getPrimaryLanguages(analysis.languages),
+                technology_stack: this.getTechnologyStack(analysis.repositories),
+                project_complexity: this.getProjectComplexity(analysis.repositories),
+                total_stars_received: this.getTotalStars(analysis.repositories),
+                average_repo_size: this.getAverageRepoSize(analysis.repositories),
+                most_used_topics: this.getMostUsedTopics(analysis.repositories)
+            },
+            activity_patterns: {
+                commit_frequency: analysis.activityPattern.commitFrequency,
+                preferred_coding_hours: this.getPreferredCodingHours(analysis.activityPattern),
+                consistency_score: analysis.activityPattern.activityConsistency,
+                recent_activity_level: this.getRecentActivityLevel(analysis.activityPattern),
+                last_commit_days_ago: analysis.activityPattern.daysSinceLastCommit,
+                timezone_pattern: analysis.activityPattern.timezonePattern,
+                weekday_preference: this.getWeekdayPreference(analysis.activityPattern.weekdayActivity),
+                monthly_activity_trend: this.getMonthlyTrend(analysis.activityPattern.monthlyCommits)
+            },
+            collaboration_style: {
+                total_pull_requests: this.getTotalPRs(analysis.repositories),
+                average_contributors_per_project: this.getAvgContributors(analysis.repositories),
+                prefers_solo_vs_team: this.analyzeSoloVsTeam(analysis.repositories),
+                project_maintenance: this.getProjectMaintenance(analysis.repositories),
+                community_engagement: this.getCommunityEngagement(analysis.profile, analysis.repositories),
+                fork_to_star_ratio: this.getForkToStarRatio(analysis.repositories)
+            }
+        }
+    }
+
+    private static calculateExperienceYears(createdAt: string): number {
+        const created = new Date(createdAt)
+        const now = new Date()
+        return Math.round((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24 * 365.25))
+    }
+
+    private static getPrimaryLanguages(languages: LanguageStats[]): Record<string, string> {
+        return languages.slice(0, 3).reduce((obj, lang) => {
+            obj[lang.name] = `${lang.percentage.toFixed(1)}%`
+            return obj
+        }, {} as Record<string, string>)
+    }
+
+    private static getTechnologyStack(repositories: RepositoryData[]): string[] {
+        const allLanguages = new Set<string>()
+        const allTopics = new Set<string>()
+
+        repositories.forEach(repo => {
+            if (repo.language) allLanguages.add(repo.language)
+            repo.topics.forEach(topic => allTopics.add(topic))
+        })
+
+        return [...Array.from(allLanguages), ...Array.from(allTopics)].slice(0, 10)
+    }
+
+    private static getProjectComplexity(repositories: RepositoryData[]): string {
+        const avgStars = repositories.reduce((sum, repo) => sum + repo.stars, 0) / repositories.length
+        const avgSize = repositories.reduce((sum, repo) => sum + repo.size, 0) / repositories.length
+        const hasComplexTopics = repositories.some(repo =>
+            repo.topics.some(topic =>
+                ['machine-learning', 'ai', 'blockchain', 'microservices', 'distributed-systems'].includes(topic.toLowerCase())
+            )
+        )
+
+        if ((avgStars > 50 && avgSize > 5000) || hasComplexTopics) return "Advanced"
+        if (avgStars > 10 && avgSize > 1000) return "Intermediate"
+        return "Beginner-Intermediate"
+    }
+
+    private static getTotalStars(repositories: RepositoryData[]): number {
+        return repositories.reduce((sum, repo) => sum + repo.stars, 0)
+    }
+
+    private static getAverageRepoSize(repositories: RepositoryData[]): number {
+        return Math.round(repositories.reduce((sum, repo) => sum + repo.size, 0) / repositories.length)
+    }
+
+    private static getMostUsedTopics(repositories: RepositoryData[]): string[] {
+        const topicCounts = new Map<string, number>()
+        repositories.forEach(repo => {
+            repo.topics.forEach(topic => {
+                topicCounts.set(topic, (topicCounts.get(topic) || 0) + 1)
+            })
+        })
+
+        return Array.from(topicCounts.entries())
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 5)
+            .map(([topic]) => topic)
+    }
+
+    private static getPreferredCodingHours(activityPattern: ActivityPattern): string {
+        const avgHour = activityPattern.averageCommitHour
+
+        if (avgHour >= 6 && avgHour < 12) return "Morning (6AM-12PM)"
+        if (avgHour >= 12 && avgHour < 18) return "Afternoon (12PM-6PM)"
+        if (avgHour >= 18 && avgHour < 24) return "Evening (6PM-12AM)"
+        return "Night/Late Hours (12AM-6AM)"
+    }
+
+    private static getRecentActivityLevel(activityPattern: ActivityPattern): string {
+        const days = activityPattern.daysSinceLastCommit
+        if (days <= 1) return "Very Active (daily commits)"
+        if (days <= 7) return "Active (weekly commits)"
+        if (days <= 30) return "Moderate (monthly activity)"
+        if (days <= 90) return "Low (quarterly activity)"
+        return "Inactive (no recent activity)"
+    }
+
+    private static getWeekdayPreference(weekdayActivity: number): string {
+        if (weekdayActivity > 0.8) return "Strong weekday preference"
+        if (weekdayActivity > 0.6) return "Moderate weekday preference"
+        if (weekdayActivity < 0.3) return "Weekend coder"
+        return "Balanced weekday/weekend activity"
+    }
+
+    private static getMonthlyTrend(monthlyCommits: { month: string, count: number }[]): string {
+        if (monthlyCommits.length < 3) return "Insufficient data"
+
+        const recent = monthlyCommits.slice(0, 3)
+        const older = monthlyCommits.slice(3, 6)
+
+        const recentAvg = recent.reduce((sum, m) => sum + m.count, 0) / recent.length
+        const olderAvg = older.length > 0 ? older.reduce((sum, m) => sum + m.count, 0) / older.length : recentAvg
+
+        const change = ((recentAvg - olderAvg) / olderAvg) * 100
+
+        if (change > 20) return "Increasing activity"
+        if (change < -20) return "Decreasing activity"
+        return "Stable activity"
+    }
+
+    private static getTotalPRs(repositories: RepositoryData[]): number {
+        // Estimate based on repository activity - in real implementation, this would be fetched
+        return repositories.filter(repo => repo.forks > 0 || repo.stars > 5).length * 2
+    }
+
+    private static getAvgContributors(repositories: RepositoryData[]): number {
+        // Estimate based on repository characteristics
+        const totalEstimated = repositories.reduce((sum, repo) => {
+            if (repo.forks > 10) return sum + 5
+            if (repo.forks > 3) return sum + 3
+            if (repo.stars > 10) return sum + 2
+            return sum + 1
+        }, 0)
+        return Math.round(totalEstimated / repositories.length)
+    }
+
+    private static analyzeSoloVsTeam(repositories: RepositoryData[]): string {
+        const soloIndicators = repositories.filter(repo =>
+            repo.forks === 0 && repo.stars < 5 && repo.topics.length === 0
+        ).length
+
+        const teamIndicators = repositories.filter(repo =>
+            repo.forks > 0 || repo.stars > 10 || repo.topics.length > 2
+        ).length
+
+        const ratio = teamIndicators / (soloIndicators + teamIndicators)
+
+        if (ratio > 0.7) return "Strong team collaboration preference"
+        if (ratio > 0.4) return "Balanced solo/team approach"
+        return "Prefers solo development"
+    }
+
+    private static getProjectMaintenance(repositories: RepositoryData[]): string {
+        const recentlyUpdated = repositories.filter(repo => {
+            const updated = new Date(repo.updatedAt)
+            const monthsAgo = (Date.now() - updated.getTime()) / (1000 * 60 * 60 * 24 * 30)
+            return monthsAgo < 6
+        }).length
+
+        const maintenanceRatio = recentlyUpdated / repositories.length
+
+        if (maintenanceRatio > 0.7) return "Excellent project maintenance"
+        if (maintenanceRatio > 0.4) return "Good project maintenance"
+        return "Minimal project maintenance"
+    }
+
+    private static getCommunityEngagement(profile: GitHubProfile, repositories: RepositoryData[]): string {
+        const totalStars = repositories.reduce((sum, repo) => sum + repo.stars, 0)
+        const networkScore = profile.followers + profile.following
+
+        if (totalStars > 100 && networkScore > 50) return "High community engagement"
+        if (totalStars > 20 && networkScore > 20) return "Moderate community engagement"
+        return "Low community engagement"
+    }
+
+    private static getForkToStarRatio(repositories: RepositoryData[]): number {
+        const totalForks = repositories.reduce((sum, repo) => sum + repo.forks, 0)
+        const totalStars = repositories.reduce((sum, repo) => sum + repo.stars, 0)
+
+        return totalStars > 0 ? Number((totalForks / totalStars).toFixed(2)) : 0
+    }
+
+    static createLLMPrompt(processedData: { userA: ProcessedDeveloper, userB: ProcessedDeveloper }): string {
+        return `You are an expert software development consultant analyzing GitHub profiles to determine pair programming compatibility.
+
+ANALYZE THE FOLLOWING TWO DEVELOPERS:
+
+## DEVELOPER A: ${processedData.userA.username}
+**Profile:**
+- Name: ${processedData.userA.profile.name}
+- Bio: "${processedData.userA.profile.bio}"
+- Location: ${processedData.userA.profile.location}
+- GitHub Experience: ${processedData.userA.profile.experience_years} years
+- Public Repositories: ${processedData.userA.profile.public_repos}
+- Network: ${processedData.userA.profile.followers} followers, ${processedData.userA.profile.following} following
+- Contact Available: ${processedData.userA.profile.has_contact_info ? 'Yes' : 'No'}
+- Company: ${processedData.userA.profile.company || 'Not specified'}
+
+**Technical Profile:**
+- Primary Languages: ${JSON.stringify(processedData.userA.technical_profile.primary_languages)}
+- Technology Stack: ${processedData.userA.technical_profile.technology_stack.join(', ')}
+- Project Complexity: ${processedData.userA.technical_profile.project_complexity}
+- Community Recognition: ${processedData.userA.technical_profile.total_stars_received} total stars
+- Average Project Size: ${processedData.userA.technical_profile.average_repo_size} KB
+- Common Topics: ${processedData.userA.technical_profile.most_used_topics.join(', ')}
+
+**Activity Patterns:**
+- Commit Frequency: ${processedData.userA.activity_patterns.commit_frequency}
+- Preferred Coding Hours: ${processedData.userA.activity_patterns.preferred_coding_hours}
+- Consistency Score: ${processedData.userA.activity_patterns.consistency_score}/100
+- Recent Activity: ${processedData.userA.activity_patterns.recent_activity_level}
+- Last Commit: ${processedData.userA.activity_patterns.last_commit_days_ago} days ago
+- Timezone Pattern: ${processedData.userA.activity_patterns.timezone_pattern}
+- Work Schedule: ${processedData.userA.activity_patterns.weekday_preference}
+- Activity Trend: ${processedData.userA.activity_patterns.monthly_activity_trend}
+
+**Collaboration Style:**
+- Pull Requests: ${processedData.userA.collaboration_style.total_pull_requests}
+- Avg Contributors per Project: ${processedData.userA.collaboration_style.average_contributors_per_project}
+- Work Style: ${processedData.userA.collaboration_style.prefers_solo_vs_team}
+- Project Maintenance: ${processedData.userA.collaboration_style.project_maintenance}
+- Community Engagement: ${processedData.userA.collaboration_style.community_engagement}
+- Fork/Star Ratio: ${processedData.userA.collaboration_style.fork_to_star_ratio}
+
+## DEVELOPER B: ${processedData.userB.username}
+**Profile:**
+- Name: ${processedData.userB.profile.name}
+- Bio: "${processedData.userB.profile.bio}"
+- Location: ${processedData.userB.profile.location}
+- GitHub Experience: ${processedData.userB.profile.experience_years} years
+- Public Repositories: ${processedData.userB.profile.public_repos}
+- Network: ${processedData.userB.profile.followers} followers, ${processedData.userB.profile.following} following
+- Contact Available: ${processedData.userB.profile.has_contact_info ? 'Yes' : 'No'}
+- Company: ${processedData.userB.profile.company || 'Not specified'}
+
+**Technical Profile:**
+- Primary Languages: ${JSON.stringify(processedData.userB.technical_profile.primary_languages)}
+- Technology Stack: ${processedData.userB.technical_profile.technology_stack.join(', ')}
+- Project Complexity: ${processedData.userB.technical_profile.project_complexity}
+- Community Recognition: ${processedData.userB.technical_profile.total_stars_received} total stars
+- Average Project Size: ${processedData.userB.technical_profile.average_repo_size} KB
+- Common Topics: ${processedData.userB.technical_profile.most_used_topics.join(', ')}
+
+**Activity Patterns:**
+- Commit Frequency: ${processedData.userB.activity_patterns.commit_frequency}
+- Preferred Coding Hours: ${processedData.userB.activity_patterns.preferred_coding_hours}
+- Consistency Score: ${processedData.userB.activity_patterns.consistency_score}/100
+- Recent Activity: ${processedData.userB.activity_patterns.recent_activity_level}
+- Last Commit: ${processedData.userB.activity_patterns.last_commit_days_ago} days ago
+- Timezone Pattern: ${processedData.userB.activity_patterns.timezone_pattern}
+- Work Schedule: ${processedData.userB.activity_patterns.weekday_preference}
+- Activity Trend: ${processedData.userB.activity_patterns.monthly_activity_trend}
+
+**Collaboration Style:**
+- Pull Requests: ${processedData.userB.collaboration_style.total_pull_requests}
+- Avg Contributors per Project: ${processedData.userB.collaboration_style.average_contributors_per_project}
+- Work Style: ${processedData.userB.collaboration_style.prefers_solo_vs_team}
+- Project Maintenance: ${processedData.userB.collaboration_style.project_maintenance}
+- Community Engagement: ${processedData.userB.collaboration_style.community_engagement}
+- Fork/Star Ratio: ${processedData.userB.collaboration_style.fork_to_star_ratio}
+
+PROVIDE A DETAILED COMPATIBILITY ANALYSIS IN THE FOLLOWING JSON FORMAT:
+
+{
+  "compatibility_score": <number 0-100>,
+  "match_category": "<excellent|good|moderate|poor>",
+  "technical_compatibility": {
+    "score": <number 0-100>,
+    "language_overlap": "<high|medium|low>",
+    "complementary_skills": ["skill1", "skill2"],
+    "learning_opportunities": {
+      "user_a_learns": ["skill1", "skill2"],
+      "user_b_learns": ["skill1", "skill2"]
+    }
+  },
+  "collaboration_compatibility": {
+    "score": <number 0-100>,
+    "work_schedule_match": "<excellent|good|challenging>",
+    "communication_feasibility": "<high|medium|low>",
+    "project_approach_alignment": "<similar|complementary|conflicting>"
+  },
+  "work_style_compatibility": {
+    "score": <number 0-100>,
+    "activity_level_match": "<excellent|good|poor>",
+    "consistency_alignment": "<high|medium|low>",
+    "maintenance_style_match": "<compatible|somewhat|incompatible>"
+  },
+  "strengths": [
+    "Specific strength 1",
+    "Specific strength 2",
+    "Specific strength 3"
+  ],
+  "potential_challenges": [
+    "Challenge 1 with mitigation strategy",
+    "Challenge 2 with mitigation strategy"
+  ],
+  "recommended_collaboration_approach": {
+    "project_types": ["type1", "type2"],
+    "session_structure": "suggested approach",
+    "communication_method": "recommended method",
+    "optimal_schedule": "best time to collaborate"
+  },
+  "success_prediction": {
+    "short_term": "<high|medium|low> - reason",
+    "long_term": "<high|medium|low> - reason"
+  },
+  "next_steps": [
+    "Immediate action 1",
+    "Immediate action 2"
+  ]
+}
+
+ANALYSIS CRITERIA:
+- Consider both complementary skills (different but useful) and overlapping skills (common ground)
+- Factor in time zones, activity patterns, and communication availability
+- Evaluate learning potential for both developers
+- Consider project complexity compatibility and experience levels
+- Assess collaboration experience and team readiness
+- Look for potential personality/work style conflicts
+- Consider recent activity levels and availability
+
+Be specific, actionable, and honest in your assessment. Focus on practical collaboration advice.`
+    }
+} 

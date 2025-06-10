@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { githubApi, GitHubDataProcessor } from '@/lib/github-api'
-import { geminiAnalyzer } from '@/lib/gemini-api'
+import { githubApi, GitHubDataProcessor } from '@/lib/githubApi'
+import { geminiAnalyzer } from '@/lib/geminiApi'
 import { DeveloperAnalysis, ApiResponse } from '@/lib/types'
 
 export async function POST(request: Request) {

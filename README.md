@@ -1,4 +1,5 @@
 # GitCompat
+# WORK IN PROGRESS 🚧
 
 A Next.js application that analyzes GitHub developer compatibility for pair programming using AI-powered insights.
 

@@ -23,7 +23,7 @@ export default function AnalysisInfo({ onSetPair }: AnalysisInfoProps) {
     return (
         <div className="mt-16 grid md:grid-cols-2 gap-8">
             <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-xl p-6">
-                <h3 className="text-xl font-semibold text-white mb-4">What We Analyze</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">What We <span className="gradient-text">Analyze</span></h3>
                 <ul className="space-y-3">
                     {analysisFeatures.map((item, index) => (
                         <li key={index} className="flex items-center text-neutral-400">
@@ -35,7 +35,7 @@ export default function AnalysisInfo({ onSetPair }: AnalysisInfoProps) {
             </div>
 
             <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-xl p-6">
-                <h3 className="text-xl font-semibold text-white mb-4">Popular Pairs to Try</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">Popular <span className="gradient-text">Pairs</span> to Try</h3>
                 <div className="space-y-2">
                     {popularPairs.map((pair, index) => (
                         <Button

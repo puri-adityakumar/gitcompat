@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +9,6 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-    GitBranch,
     ArrowLeft,
     Star,
     GitFork,
@@ -50,10 +48,15 @@ export default function ResultsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="text-center">
+            <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
+                {/* Floating Orbs */}
+                <div className="floating-orb floating-orb-1"></div>
+                <div className="floating-orb floating-orb-2"></div>
+                <div className="floating-orb floating-orb-3"></div>
+
+                <div className="text-center relative z-10">
                     <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
-                    <p className="text-neutral-400">Loading results...</p>
+                    <p className="text-neutral-400">Loading <span className="gradient-text">results</span>...</p>
                 </div>
             </div>
         )
@@ -61,13 +64,18 @@ export default function ResultsPage() {
 
     if (!results) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <div className="text-center">
+            <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
+                {/* Floating Orbs */}
+                <div className="floating-orb floating-orb-1"></div>
+                <div className="floating-orb floating-orb-2"></div>
+                <div className="floating-orb floating-orb-3"></div>
+
+                <div className="text-center relative z-10">
                     <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-white mb-2">No Results Found</h1>
+                    <h1 className="text-2xl font-bold text-white mb-2">No <span className="gradient-text">Results</span> Found</h1>
                     <p className="text-neutral-400 mb-4">Please run an analysis first.</p>
                     <Link href="/analyze">
-                        <Button className="bg-white text-black hover:bg-neutral-200">
+                        <Button className="gradient-button text-white">
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Analysis
                         </Button>
@@ -206,36 +214,13 @@ export default function ResultsPage() {
     )
 
     return (
-        <div className="min-h-screen bg-black">
-            {/* Navigation */}
-            <nav className="border-b border-neutral-800/50 bg-black/50 backdrop-blur-xl sticky top-0 z-50">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <Link href="/" className="flex items-center space-x-2">
-                            <div className="w-8 h-8 relative">
-                                <Image 
-                                    src="/Logo.png" 
-                                    alt="GitCompat Logo" 
-                                    width={32} 
-                                    height={32}
-                                    className="rounded-sm"
-                                />
-                            </div>
-                            <span className="text-lg font-epilogue font-medium text-white">gitcompat</span>
-                        </Link>
-                        <div className="flex items-center space-x-4">
-                            <Link href="/analyze">
-                                <Button className="text-neutral-400 hover:text-white hover:bg-neutral-800">
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    New Analysis
-                                </Button>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+        <div className="min-h-screen bg-black relative overflow-hidden">
+            {/* Floating Orbs */}
+            <div className="floating-orb floating-orb-1"></div>
+            <div className="floating-orb floating-orb-2"></div>
+            <div className="floating-orb floating-orb-3"></div>
 
-            <main className="max-w-7xl mx-auto px-4 py-8">
+            <main className="max-w-7xl mx-auto px-4 py-8 relative z-10">
                 {/* Header */}
                 <div className="text-center mb-12">
                     <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-neutral-900 text-neutral-300 border border-neutral-800 mb-6">
@@ -243,7 +228,7 @@ export default function ResultsPage() {
                         Analysis Complete
                     </div>
                     <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4 tracking-tight">
-                        Compatibility Results
+                        <span className="gradient-text">Compatibility</span> Results
                     </h1>
                     <p className="text-neutral-400 text-lg">
                         Analysis for {userA} and {userB}
@@ -253,7 +238,7 @@ export default function ResultsPage() {
                 {/* Overall Compatibility Score */}
                 <div className="bg-gradient-to-b from-neutral-900 to-neutral-950 border border-neutral-800 rounded-2xl p-8 mb-8">
                     <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold text-white mb-2">Overall Compatibility</h2>
+                        <h2 className="text-2xl font-bold text-white mb-2">Overall <span className="gradient-text">Compatibility</span></h2>
                         <div className={`text-6xl font-bold mb-4 ${getScoreColor(compatibility.overallScore)}`}>
                             {compatibility.overallScore}%
                         </div>
@@ -342,7 +327,7 @@ export default function ResultsPage() {
                 {/* Actions */}
                 <div className="mt-8 text-center">
                     <Link href="/analyze">
-                        <Button className="bg-white text-black hover:bg-neutral-200 font-medium px-8">
+                        <Button className="gradient-button text-white font-medium px-8">
                             Analyze Another Pair
                         </Button>
                     </Link>

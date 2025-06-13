@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Navigation from "@/components/analyze/Navigation"
 import AnalyzeHero from "@/components/analyze/AnalyzeHero"
 import AnalysisForm from "@/components/analyze/AnalysisForm"
 import AnalysisInfo from "@/components/analyze/AnalysisInfo"
@@ -16,9 +15,13 @@ export default function AnalyzePage() {
     }
 
     return (
-        <div className="min-h-screen bg-black">
-            <Navigation />
-            <main className="max-w-4xl mx-auto px-4 py-16">
+        <div className="min-h-screen bg-black relative overflow-hidden">
+            {/* Floating Orbs */}
+            <div className="floating-orb floating-orb-1"></div>
+            <div className="floating-orb floating-orb-2"></div>
+            <div className="floating-orb floating-orb-3"></div>
+
+            <main className="max-w-4xl mx-auto px-4 py-16 relative z-10">
                 <AnalyzeHero />
                 <AnalysisForm
                     userA={userA}

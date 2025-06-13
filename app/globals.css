@@ -114,6 +114,21 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
+  .glass-nav-seamless {
+    @apply backdrop-blur-xl;
+    background: linear-gradient(135deg,
+        rgba(0, 18, 32, 0.4),
+        rgba(255, 102, 0, 0.05),
+        rgba(0, 64, 128, 0.1),
+        rgba(0, 0, 0, 0.6));
+    background-size: 400% 400%;
+    animation: gradientNavFlow 12s ease-in-out infinite;
+    box-shadow:
+      0 8px 32px rgba(255, 102, 0, 0.1),
+      0 4px 16px rgba(0, 64, 128, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
   .gradient-text {
     background: linear-gradient(135deg, #FF6600, #FFB366, #004080, #001220);
     background-size: 300% 300%;
@@ -199,6 +214,22 @@
 
     75% {
       background-position: 50% 0%;
+    }
+  }
+
+  @keyframes gradientNavFlow {
+
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+
+    33% {
+      background-position: 100% 25%;
+    }
+
+    66% {
+      background-position: 50% 75%;
     }
   }
 

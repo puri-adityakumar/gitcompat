@@ -159,7 +159,7 @@ export default function AnalysisForm({ userA, userB, onUserAChange, onUserBChang
                 <Button
                     onClick={handleAnalyze}
                     disabled={!isFormValid || isAnalyzing}
-                    className="w-full bg-white text-black hover:bg-neutral-200 font-medium py-3 text-lg"
+                    className="w-full gradient-button text-white font-medium py-3 text-lg"
                     size="lg"
                 >
                     {isAnalyzing ? (

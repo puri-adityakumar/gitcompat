@@ -6,7 +6,7 @@ export default function AnalyzeHero() {
                 AI Analysis Tool
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
-                Analyze Compatibility
+                Analyze <span className="gradient-text">Compatibility</span>
             </h1>
             <p className="text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed">
                 Enter two GitHub usernames to have our AI examine their coding styles,

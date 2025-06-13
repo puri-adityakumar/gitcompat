@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { GitBranch, Users, Search, ArrowLeft, AlertCircle, CheckCircle } from "lucide-react"
+import { GitBranch, Users, Search, ArrowLeft, AlertCircle, CheckCircle, BrainCircuit } from "lucide-react"
 import { validateGitHubUsername } from "@/lib/utils"
 
 export default function AnalyzePage() {
@@ -110,125 +110,84 @@ export default function AnalyzePage() {
     const isFormValid = userA.trim() && userB.trim() && Object.keys(errors).length === 0
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-            {/* Navigation */}
-            <nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex items-center">
-                            <Link href="/" className="flex-shrink-0 flex items-center">
-                                <GitBranch className="h-8 w-8 text-blue-600" />
-                                <span className="ml-2 text-xl font-bold text-gray-900">GitCompat</span>
-                            </Link>
-                        </div>
-                        <div className="flex items-center">
-                            <Link href="/">
-                                <Button variant="outline" size="sm">
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Back to Home
-                                </Button>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+        <div className="container mx-auto px-4 py-8">
+            <nav className="flex justify-between items-center mb-12">
+                <Link href="/" className="flex items-center space-x-2">
+                    <GitBranch className="h-8 w-8 text-primary" />
+                    <span className="text-2xl font-bold text-gradient">GitCompat</span>
+                </Link>
+                <Link href="/">
+                    <Button variant="ghost">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Home
+                    </Button>
+                </Link>
             </nav>
 
-            {/* Main Content */}
-            <div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+            <main className="max-w-4xl mx-auto">
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                    <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-4">
                         Analyze Pair Programming Compatibility
                     </h1>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        Enter two GitHub usernames to analyze their compatibility for pair programming.
-                        Our AI will examine their coding styles, technical skills, and collaboration patterns.
+                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                        Enter two GitHub usernames to have our AI examine their coding styles, technical skills, and collaboration patterns.
                     </p>
                 </div>
 
-                <Card className="max-w-2xl mx-auto">
+                <Card className="glass-card max-w-2xl mx-auto">
                     <CardHeader>
-                        <CardTitle className="flex items-center">
-                            <Users className="mr-2 h-6 w-6 text-blue-600" />
+                        <CardTitle className="flex items-center text-2xl">
+                            <Users className="mr-3 h-6 w-6 text-primary" />
                             Developer Usernames
                         </CardTitle>
                         <CardDescription>
-                            Enter the GitHub usernames of two developers you want to analyze
+                            Enter the GitHub usernames of the two developers you wish to analyze.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div className="space-y-4">
-                            {/* Developer A Input */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label htmlFor="userA" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Developer A Username
+                                <label htmlFor="userA" className="block text-sm font-medium text-muted-foreground mb-2">
+                                    Developer A
                                 </label>
-                                <div className="relative">
-                                    <Input
-                                        id="userA"
-                                        type="text"
-                                        placeholder="e.g., octocat"
-                                        value={userA}
-                                        onChange={handleUserAChange}
-                                        className={errors.userA ? "border-red-500 focus-visible:ring-red-500" : ""}
-                                        disabled={isAnalyzing}
-                                    />
-                                    {!errors.userA && userA.trim() && validateGitHubUsername(userA.trim()) && (
-                                        <CheckCircle className="absolute right-3 top-3 h-4 w-4 text-green-500" />
-                                    )}
-                                    {errors.userA && (
-                                        <AlertCircle className="absolute right-3 top-3 h-4 w-4 text-red-500" />
-                                    )}
-                                </div>
-                                {errors.userA && (
-                                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                                        <AlertCircle className="mr-1 h-4 w-4" />
-                                        {errors.userA}
-                                    </p>
-                                )}
+                                <Input
+                                    id="userA"
+                                    type="text"
+                                    placeholder="e.g., octocat"
+                                    value={userA}
+                                    onChange={handleUserAChange}
+                                    className={errors.userA ? "border-destructive focus-visible:ring-destructive" : ""}
+                                    disabled={isAnalyzing}
+                                />
+                                {errors.userA && <p className="mt-1 text-sm text-destructive">{errors.userA}</p>}
                             </div>
-
-                            {/* Developer B Input */}
                             <div>
-                                <label htmlFor="userB" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Developer B Username
+                                <label htmlFor="userB" className="block text-sm font-medium text-muted-foreground mb-2">
+                                    Developer B
                                 </label>
-                                <div className="relative">
-                                    <Input
-                                        id="userB"
-                                        type="text"
-                                        placeholder="e.g., github"
-                                        value={userB}
-                                        onChange={handleUserBChange}
-                                        className={errors.userB ? "border-red-500 focus-visible:ring-red-500" : ""}
-                                        disabled={isAnalyzing}
-                                    />
-                                    {!errors.userB && userB.trim() && validateGitHubUsername(userB.trim()) && (
-                                        <CheckCircle className="absolute right-3 top-3 h-4 w-4 text-green-500" />
-                                    )}
-                                    {errors.userB && (
-                                        <AlertCircle className="absolute right-3 top-3 h-4 w-4 text-red-500" />
-                                    )}
-                                </div>
-                                {errors.userB && (
-                                    <p className="mt-1 text-sm text-red-600 flex items-center">
-                                        <AlertCircle className="mr-1 h-4 w-4" />
-                                        {errors.userB}
-                                    </p>
-                                )}
+                                <Input
+                                    id="userB"
+                                    type="text"
+                                    placeholder="e.g., torvalds"
+                                    value={userB}
+                                    onChange={handleUserBChange}
+                                    className={errors.userB ? "border-destructive focus-visible:ring-destructive" : ""}
+                                    disabled={isAnalyzing}
+                                />
+                                {errors.userB && <p className="mt-1 text-sm text-destructive">{errors.userB}</p>}
                             </div>
                         </div>
 
-                        {/* Analysis Button */}
                         <Button
                             onClick={handleAnalyze}
                             disabled={!isFormValid || isAnalyzing}
-                            className="w-full"
+                            className="w-full text-lg"
                             size="lg"
                         >
                             {isAnalyzing ? (
                                 <>
-                                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                    Analyzing Compatibility...
+                                    <BrainCircuit className="mr-2 h-5 w-5 animate-spin" />
+                                    Analyzing...
                                 </>
                             ) : (
                                 <>
@@ -237,52 +196,30 @@ export default function AnalyzePage() {
                                 </>
                             )}
                         </Button>
-
-                        {/* Info Section */}
-                        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                            <h3 className="font-medium text-blue-900 mb-2">What we analyze:</h3>
-                            <ul className="text-sm text-blue-800 space-y-1">
-                                <li>• Programming languages and technology overlap</li>
-                                <li>• Coding patterns and commit frequency</li>
-                                <li>• Repository structure and organization</li>
-                                <li>• Collaboration history and code quality</li>
-                                <li>• Work style compatibility indicators</li>
-                            </ul>
-                        </div>
                     </CardContent>
                 </Card>
 
-                {/* Popular Examples */}
-                <div className="mt-12 text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                        Try Popular Developer Combinations
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
-                        {[
-                            { userA: "octocat", userB: "defunkt", label: "Octocat vs Defunkt" },
-                            { userA: "torvalds", userB: "gvanrossum", label: "Linus vs Guido" },
-                            { userA: "addyosmani", userB: "sindresorhus", label: "Addy vs Sindre" },
-                        ].map((example, index) => (
-                            <Card
-                                key={index}
-                                className="cursor-pointer hover:shadow-lg transition-shadow"
-                                onClick={() => {
-                                    setUserA(example.userA)
-                                    setUserB(example.userB)
-                                    setErrors({})
-                                }}
-                            >
-                                <CardContent className="p-4 text-center">
-                                    <p className="font-medium text-gray-900">{example.label}</p>
-                                    <p className="text-sm text-gray-600 mt-1">
-                                        {example.userA} vs {example.userB}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        ))}
+                <div className="mt-12 grid md:grid-cols-2 gap-8 text-center">
+                    <div className="glass-card p-6">
+                        <h3 className="text-xl font-semibold text-gradient mb-3">What We Analyze</h3>
+                        <ul className="text-muted-foreground space-y-2 text-left">
+                            <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-primary/80" />Programming language overlap</li>
+                            <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-primary/80" />Coding patterns & frequency</li>
+                            <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-primary/80" />Repository structure</li>
+                            <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-primary/80" />Collaboration history</li>
+                            <li className="flex items-center"><CheckCircle className="h-4 w-4 mr-2 text-primary/80" />Work style compatibility</li>
+                        </ul>
+                    </div>
+                    <div className="glass-card p-6">
+                        <h3 className="text-xl font-semibold text-gradient mb-3">Popular Pairs to Try</h3>
+                        <div className="flex flex-col space-y-2">
+                            <Button variant="ghost" onClick={() => { setUserA("torvalds"); setUserB("gvanrossum"); }}>Linus Torvalds vs Guido van Rossum</Button>
+                            <Button variant="ghost" onClick={() => { setUserA("gaearon"); setUserB("yyx990803"); }}>Dan Abramov vs Evan You</Button>
+                            <Button variant="ghost" onClick={() => { setUserA("sindresorhus"); setUserB("tj"); }}>Sindre Sorhus vs TJ Holowaychuk</Button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     )
 }

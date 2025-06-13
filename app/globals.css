@@ -33,10 +33,14 @@
     --ring: 262.1 83.3% 57.8%;
 
     --radius: 0.75rem;
+
+    --font-work-sans: 'Work Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-epilogue: 'Epilogue', ui-sans-serif, system-ui, sans-serif;
   }
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-work-sans);
     background-image:
       radial-gradient(circle at 15% 50%, hsl(var(--primary) / 0.1) 0%, transparent 25%),
       radial-gradient(circle at 85% 30%, hsl(var(--secondary) / 0.1) 0%, transparent 25%);
@@ -46,6 +50,14 @@
 @layer components {
   .glass-card {
     @apply rounded-lg border bg-card/60 backdrop-blur-sm;
+  }
+
+  .font-epilogue {
+    font-family: var(--font-epilogue);
+  }
+
+  .font-work-sans {
+    font-family: var(--font-work-sans);
   }
 }
 

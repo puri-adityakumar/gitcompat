@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Work_Sans, Epilogue } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const workSans = Work_Sans({
+  variable: "--font-work-sans",
   subsets: ["latin"],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const epilogue = Epilogue({
+  variable: "--font-epilogue",
   subsets: ["latin"],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -17,10 +19,16 @@ export const metadata: Metadata = {
   description: "Analyze GitHub developer profiles to find perfect pair programming partners using AI-powered compatibility analysis.",
   keywords: ["GitHub", "pair programming", "developer compatibility", "AI analysis", "coding partners"],
   authors: [{ name: "GitCompat Team" }],
+  icons: {
+    icon: '/Logo.png',
+    shortcut: '/Logo.png',
+    apple: '/Logo.png',
+  },
   openGraph: {
     title: "GitCompat - Find Your Perfect Pair Programming Partner",
     description: "AI-powered GitHub profile analysis for pair programming compatibility",
     type: "website",
+    images: ['/Logo.png'],
   },
 };
 
@@ -31,8 +39,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <head>
+        <link rel="icon" href="/Logo.png" sizes="any" />
+        <link rel="apple-touch-icon" href="/Logo.png" />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${workSans.variable} ${epilogue.variable} antialiased font-sans`}
       >
         {children}
       </body>

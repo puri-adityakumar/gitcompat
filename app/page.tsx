@@ -2,7 +2,6 @@ import Navigation from "@/components/home/Navigation"
 import Hero from "@/components/home/Hero"
 import Features from "@/components/home/Features"
 import HowItWorks from "@/components/home/HowItWorks"
-import CallToAction from "@/components/home/CallToAction"
 import Footer from "@/components/home/Footer"
 
 export default function HomePage() {
@@ -12,7 +11,6 @@ export default function HomePage() {
       <Hero />
       <Features />
       <HowItWorks />
-      <CallToAction />
       <Footer />
     </div>
   )

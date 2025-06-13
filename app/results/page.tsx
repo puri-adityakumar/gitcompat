@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
+import UniversalNavbar from "@/components/UniversalNavbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -48,15 +49,19 @@ export default function ResultsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
+            <div className="min-h-screen bg-black relative overflow-hidden">
                 {/* Floating Orbs */}
                 <div className="floating-orb floating-orb-1"></div>
                 <div className="floating-orb floating-orb-2"></div>
                 <div className="floating-orb floating-orb-3"></div>
 
-                <div className="text-center relative z-10">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
-                    <p className="text-neutral-400">Loading <span className="gradient-text">results</span>...</p>
+                <UniversalNavbar />
+
+                <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+                    <div className="text-center relative z-10">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto mb-4"></div>
+                        <p className="text-neutral-400">Loading <span className="gradient-text">results</span>...</p>
+                    </div>
                 </div>
             </div>
         )
@@ -64,22 +69,26 @@ export default function ResultsPage() {
 
     if (!results) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
+            <div className="min-h-screen bg-black relative overflow-hidden">
                 {/* Floating Orbs */}
                 <div className="floating-orb floating-orb-1"></div>
                 <div className="floating-orb floating-orb-2"></div>
                 <div className="floating-orb floating-orb-3"></div>
 
-                <div className="text-center relative z-10">
-                    <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-white mb-2">No <span className="gradient-text">Results</span> Found</h1>
-                    <p className="text-neutral-400 mb-4">Please run an analysis first.</p>
-                    <Link href="/analyze">
-                        <Button className="gradient-button text-white">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to Analysis
-                        </Button>
-                    </Link>
+                <UniversalNavbar />
+
+                <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+                    <div className="text-center relative z-10">
+                        <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                        <h1 className="text-2xl font-bold text-white mb-2">No <span className="gradient-text">Results</span> Found</h1>
+                        <p className="text-neutral-400 mb-4">Please run an analysis first.</p>
+                        <Link href="/analyze">
+                            <Button className="gradient-button text-white">
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Back to Analysis
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
             </div>
         )
@@ -219,6 +228,8 @@ export default function ResultsPage() {
             <div className="floating-orb floating-orb-1"></div>
             <div className="floating-orb floating-orb-2"></div>
             <div className="floating-orb floating-orb-3"></div>
+
+            <UniversalNavbar />
 
             <main className="max-w-7xl mx-auto px-4 py-8 relative z-10">
                 {/* Header */}

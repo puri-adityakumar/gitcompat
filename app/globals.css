@@ -154,6 +154,33 @@
     transform: translateY(-2px);
   }
 
+  .gradient-button-glow {
+    background: linear-gradient(135deg, #FF6600, #FFB366, #FF6600);
+    background-size: 200% 200%;
+    box-shadow:
+      0 4px 16px rgba(255, 102, 0, 0.4),
+      0 0 20px rgba(255, 102, 0, 0.3),
+      0 0 40px rgba(255, 102, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    animation: glowPulse 3s ease-in-out infinite, gradientShift 4s ease-in-out infinite;
+    transition: all 0.3s ease;
+  }
+
+  .gradient-button-glow:hover {
+    background: linear-gradient(135deg, #FFB366, #FF6600, #FFB366);
+    background-size: 200% 200%;
+    box-shadow:
+      0 8px 32px rgba(255, 102, 0, 0.6),
+      0 0 30px rgba(255, 102, 0, 0.5),
+      0 0 60px rgba(255, 102, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transform: translateY(-3px) scale(1.05);
+  }
+
+  .gradient-button-glow:active {
+    transform: translateY(-1px) scale(1.02);
+  }
+
   .floating-orb {
     position: absolute;
     border-radius: 50%;
@@ -230,6 +257,26 @@
 
     66% {
       background-position: 50% 75%;
+    }
+  }
+
+  @keyframes glowPulse {
+
+    0%,
+    100% {
+      box-shadow:
+        0 4px 16px rgba(255, 102, 0, 0.4),
+        0 0 20px rgba(255, 102, 0, 0.3),
+        0 0 40px rgba(255, 102, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    50% {
+      box-shadow:
+        0 4px 20px rgba(255, 102, 0, 0.5),
+        0 0 30px rgba(255, 102, 0, 0.4),
+        0 0 50px rgba(255, 102, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
     }
   }
 

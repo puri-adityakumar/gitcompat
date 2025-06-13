@@ -27,7 +27,7 @@ export default function HowItWorks() {
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 tracking-tight">
-                        How It Works
+                        <span className="gradient-text">How It Works</span>
                     </h2>
                     <p className="text-neutral-400 text-lg">
                         Simple process, powerful insights
@@ -37,7 +37,7 @@ export default function HowItWorks() {
                 <div className="space-y-8">
                     {steps.map((item, index) => (
                         <div key={index} className="flex items-start space-x-6 group">
-                            <div className="flex-shrink-0 w-8 h-8 bg-neutral-800 text-neutral-400 rounded-lg flex items-center justify-center text-sm font-medium group-hover:bg-white group-hover:text-black transition-all duration-300">
+                            <div className="flex-shrink-0 w-8 h-8 gradient-button text-white rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-300">
                                 {item.step}
                             </div>
                             <div className="group-hover:translate-x-1 transition-transform duration-300">

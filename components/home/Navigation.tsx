@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 
 export default function Navigation() {
     return (
-        <nav className="border-b border-neutral-800/50 bg-black/50 backdrop-blur-xl sticky top-0 z-50">
+        <nav className="glass-nav border-b sticky top-0 z-50">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     <div className="flex items-center">
@@ -26,7 +26,7 @@ export default function Navigation() {
                             Analyze
                         </Link>
                         <Link href="/analyze">
-                            <Button size="sm" className="bg-white text-black hover:bg-neutral-200 font-medium">
+                            <Button className="gradient-button text-white font-medium px-4 py-2 rounded-lg">
                                 Get Started
                             </Button>
                         </Link>

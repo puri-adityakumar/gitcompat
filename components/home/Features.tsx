@@ -9,7 +9,7 @@ export default function Features() {
     },
     {
       icon: Users,
-      title: "Work Style Analysis", 
+      title: "Work Style Analysis",
       description: "Evaluates coding patterns, commit frequency, and collaboration preferences."
     },
     {
@@ -24,7 +24,7 @@ export default function Features() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 tracking-tight">
-            Intelligent Developer Analysis
+            Intelligent <span className="gradient-text">Developer Analysis</span>
           </h2>
           <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
             Our AI examines multiple factors to determine compatibility for successful pair programming.
@@ -36,9 +36,9 @@ export default function Features() {
             const IconComponent = feature.icon
             return (
               <div key={index} className="group">
-                <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-xl p-6 hover:border-neutral-700/50 transition-all duration-300">
-                  <div className="w-12 h-12 bg-neutral-800 rounded-lg flex items-center justify-center mb-4 group-hover:bg-neutral-700 transition-colors">
-                    <IconComponent className="h-6 w-6 text-neutral-300" />
+                <div className="glass-card p-6 hover:scale-105 transition-all duration-300">
+                  <div className="w-12 h-12 gradient-button rounded-lg flex items-center justify-center mb-4">
+                    <IconComponent className="h-6 w-6 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
                   <p className="text-neutral-400 text-sm leading-relaxed">

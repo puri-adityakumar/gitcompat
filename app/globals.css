@@ -39,17 +39,139 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-black text-foreground;
     font-family: var(--font-work-sans);
-    background-image:
-      radial-gradient(circle at 15% 50%, hsl(var(--primary) / 0.1) 0%, transparent 25%),
-      radial-gradient(circle at 85% 30%, hsl(var(--secondary) / 0.1) 0%, transparent 25%);
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(circle at 20% 80%, #001220 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, #FF6600 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, #004080 0%, transparent 50%),
+      radial-gradient(circle at 60% 70%, #FFB366 0%, transparent 50%),
+      radial-gradient(circle at 90% 10%, #004080 0%, transparent 50%);
+    filter: blur(40px);
+    opacity: 0.3;
+    z-index: -2;
+    animation: gradientShift 20s ease-in-out infinite;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  @keyframes gradientShift {
+
+    0%,
+    100% {
+      filter: blur(40px) hue-rotate(0deg);
+    }
+
+    25% {
+      filter: blur(35px) hue-rotate(90deg);
+    }
+
+    50% {
+      filter: blur(45px) hue-rotate(180deg);
+    }
+
+    75% {
+      filter: blur(35px) hue-rotate(270deg);
+    }
   }
 }
 
 @layer components {
   .glass-card {
-    @apply rounded-lg border bg-card/60 backdrop-blur-sm;
+    @apply rounded-lg border border-white/10 backdrop-blur-xl;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    box-shadow:
+      0 8px 32px rgba(0, 18, 32, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-nav {
+    @apply backdrop-blur-xl border-white/10;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6));
+    box-shadow:
+      0 4px 16px rgba(0, 18, 32, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #FF6600, #FFB366, #004080, #001220);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientFlow 8s ease-in-out infinite;
+  }
+
+  .gradient-button {
+    background: linear-gradient(135deg, #FF6600, #FFB366);
+    box-shadow:
+      0 4px 16px rgba(255, 102, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .gradient-button:hover {
+    background: linear-gradient(135deg, #FFB366, #FF6600);
+    box-shadow:
+      0 8px 24px rgba(255, 102, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .floating-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.6;
+    animation: float 20s ease-in-out infinite;
+  }
+
+  .floating-orb-1 {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(45deg, #001220, #004080);
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+
+  .floating-orb-2 {
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(45deg, #FF6600, #FFB366);
+    top: 60%;
+    right: 20%;
+    animation-delay: 7s;
+  }
+
+  .floating-orb-3 {
+    width: 180px;
+    height: 180px;
+    background: linear-gradient(45deg, #004080, #001220);
+    bottom: 20%;
+    left: 70%;
+    animation-delay: 14s;
   }
 
   .font-epilogue {
@@ -58,6 +180,46 @@
 
   .font-work-sans {
     font-family: var(--font-work-sans);
+  }
+
+  @keyframes gradientFlow {
+
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+
+    25% {
+      background-position: 100% 50%;
+    }
+
+    50% {
+      background-position: 50% 100%;
+    }
+
+    75% {
+      background-position: 50% 0%;
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0) translateX(0) scale(1);
+    }
+
+    25% {
+      transform: translateY(-20px) translateX(10px) scale(1.1);
+    }
+
+    50% {
+      transform: translateY(-40px) translateX(-10px) scale(0.9);
+    }
+
+    75% {
+      transform: translateY(-20px) translateX(5px) scale(1.05);
+    }
   }
 }
 

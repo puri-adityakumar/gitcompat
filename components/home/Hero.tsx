@@ -4,10 +4,11 @@ import { ArrowRight, Github } from "lucide-react"
 
 export default function Hero() {
   return (
-    <div className="relative">
-      {/* Background Gradient - Fixed positioning */}
-      <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 via-black to-black pointer-events-none -z-10"></div>
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-white/[0.02] rounded-full blur-3xl -z-10"></div>
+    <div className="relative overflow-hidden">
+      {/* Floating Orbs */}
+      <div className="floating-orb floating-orb-1"></div>
+      <div className="floating-orb floating-orb-2"></div>
+      <div className="floating-orb floating-orb-3"></div>
 
       {/* Hero Section */}
       <section className="relative px-4 pb-16 sm:px-6 lg:px-8 z-10">
@@ -21,7 +22,7 @@ export default function Hero() {
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 tracking-tight">
             Find Your Perfect
             <br />
-            <span className="bg-gradient-to-r from-neutral-200 via-white to-neutral-400 bg-clip-text text-transparent">
+            <span className="gradient-text">
               Pair Programming
             </span>
             <br />
@@ -35,7 +36,7 @@ export default function Hero() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link href="/analyze">
-              <Button className="bg-white text-black hover:bg-neutral-200 font-medium px-8 py-3 rounded-lg">
+              <Button className="gradient-button text-white font-medium px-8 py-3 rounded-lg">
                 Start Analysis
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -51,15 +52,15 @@ export default function Hero() {
       {/* Call to Action Section */}
       <section className="relative px-4 py-20 sm:px-6 lg:px-8 z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-gradient-to-b from-neutral-900 to-neutral-950 border border-neutral-800 rounded-2xl p-12">
+          <div className="glass-card p-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 tracking-tight">
-              Ready to find your perfect partner?
+              Ready to find your <span className="gradient-text">perfect partner</span>?
             </h2>
             <p className="text-neutral-400 mb-8 text-lg">
               Start analyzing GitHub profiles and discover your ideal pair programming partner.
             </p>
             <Link href="/analyze">
-              <Button className="bg-white text-black hover:bg-neutral-200 font-medium px-8 py-3 rounded-lg">
+              <Button className="gradient-button text-white font-medium px-8 py-3 rounded-lg">
                 <Github className="mr-2 h-5 w-5" />
                 Start Analysis
               </Button>

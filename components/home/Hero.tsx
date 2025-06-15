@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Github, Sparkles, Zap } from "lucide-react"
+import { WordRotate } from "@/components/ui/word-rotate"
 
 export default function Hero() {
   return (
@@ -11,7 +12,7 @@ export default function Hero() {
       <div className="floating-orb floating-orb-3"></div>
 
       {/* Hero Section */}
-      <section className="relative px-4 pb-16 sm:px-6 lg:px-8 z-10">
+      <section className="relative px-4 pt-16 pb-16 sm:px-6 lg:px-8 sm:pt-20 lg:pt-24 z-10">
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-neutral-900 text-neutral-300 border border-neutral-800 mb-6">
@@ -19,17 +20,16 @@ export default function Hero() {
             AI-Powered Developer Matching
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white tracking-tight">
             Find Your Perfect
             <br />
-            <span className="gradient-text">
-              Pair Programming
-            </span>
-            <br />
-            Partner
+            <WordRotate
+              className="gradient-text text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight"
+              words={["Pair Programming", "Coding Crush", "Dev Collaborator", "Code Companion"]}
+              duration={3000}
+            />
           </h1>
-
-          <p className="text-lg sm:text-xl text-neutral-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-neutral-400 mb-12 max-w-2xl mx-auto leading-relaxed mt-6">
             Analyze GitHub profiles using advanced AI to determine compatibility between developers and find your ideal coding partner.
           </p>
 

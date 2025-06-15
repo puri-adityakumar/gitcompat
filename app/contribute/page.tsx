@@ -47,10 +47,16 @@ export default function ContributePage() {
                             <div className="w-16 h-16 gradient-button rounded-lg flex items-center justify-center mx-auto mb-4">
                                 <Code className="h-8 w-8 text-white" />
                             </div>
-                            <h3 className="text-lg font-medium text-white mb-2">Coming Soon</h3>
-                            <p className="text-neutral-400 text-sm">
-                                Contribution opportunities will be available here
+                            <h3 className="text-lg font-medium text-white mb-2">Documentation Available</h3>
+                            <p className="text-neutral-400 text-sm mb-4">
+                                Get started with our contribution guides and project documentation
                             </p>
+                            <Button
+                                onClick={() => window.open('/contribute/docs', '_blank')}
+                                className="gradient-button text-white font-medium"
+                            >
+                                View Documentation
+                            </Button>
                         </div>
                     </div>
                 </div>

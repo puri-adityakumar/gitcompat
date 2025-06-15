@@ -17,12 +17,13 @@ export default function AnalysisInfo({ onSetPair }: AnalysisInfoProps) {
     const popularPairs = [
         { a: "torvalds", b: "gvanrossum", label: "Linus Torvalds vs Guido van Rossum" },
         { a: "gaearon", b: "yyx990803", label: "Dan Abramov vs Evan You" },
-        { a: "sindresorhus", b: "tj", label: "Sindre Sorhus vs TJ Holowaychuk" }
+        { a: "sindresorhus", b: "tj", label: "Sindre Sorhus vs TJ Holowaychuk" },
+        { a: "hkirat", b: "manuarora700", label: "Harkirat Singh vs Manu Arora" }
     ]
 
     return (
         <div className="mt-16 grid md:grid-cols-2 gap-8">
-            <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-xl p-6">
+            <div className="bg-neutral-900/70 border border-neutral-800/70 rounded-xl p-6">
                 <h3 className="text-xl font-semibold text-white mb-4">What We <span className="gradient-text">Analyze</span></h3>
                 <ul className="space-y-3">
                     {analysisFeatures.map((item, index) => (
@@ -34,7 +35,7 @@ export default function AnalysisInfo({ onSetPair }: AnalysisInfoProps) {
                 </ul>
             </div>
 
-            <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-xl p-6">
+            <div className="bg-neutral-900/70 border border-neutral-800/70 rounded-xl p-6">
                 <h3 className="text-xl font-semibold text-white mb-4">Popular <span className="gradient-text">Pairs</span> to Try</h3>
                 <div className="space-y-2">
                     {popularPairs.map((pair, index) => (

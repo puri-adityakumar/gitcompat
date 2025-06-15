@@ -160,11 +160,10 @@ export default function AnalysisForm({ userA, userB, onUserAChange, onUserBChang
                     onClick={handleAnalyze}
                     disabled={!isFormValid || isAnalyzing}
                     className="w-full gradient-button text-white font-medium py-3 text-lg"
-                    size="lg"
                 >
                     {isAnalyzing ? (
                         <>
-                            <BrainCircuit className="mr-2 h-5 w-5 animate-spin" />
+                            <div className="mr-2 h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                             Analyzing...
                         </>
                     ) : (

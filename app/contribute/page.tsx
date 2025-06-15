@@ -1,6 +1,7 @@
 "use client"
 
 import UniversalNavbar from "@/components/UniversalNavbar"
+import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
 import { Wrench, Code, GitBranch, Users } from "lucide-react"
 
@@ -88,6 +89,8 @@ export default function ContributePage() {
                     </div>
                 </div>
             </main>
+
+            <Footer />
         </div>
     )
 } 

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import UniversalNavbar from "@/components/UniversalNavbar"
+import Footer from "@/components/Footer"
 import AnalyzeHero from "@/components/analyze/AnalyzeHero"
 import AnalysisForm from "@/components/analyze/AnalysisForm"
 import AnalysisInfo from "@/components/analyze/AnalysisInfo"
@@ -34,6 +35,8 @@ export default function AnalyzePage() {
                 />
                 <AnalysisInfo onSetPair={handleSetPair} />
             </main>
+
+            <Footer />
         </div>
     )
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import UniversalNavbar from "@/components/UniversalNavbar"
+import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -344,6 +345,8 @@ export default function ResultsPage() {
                     </Link>
                 </div>
             </main>
+
+            <Footer />
         </div>
     )
 } 

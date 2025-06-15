@@ -7,13 +7,13 @@ export default function DocsLayout({
     children: React.ReactNode
 }) {
     return (
-        <div className="min-h-screen bg-black">
+        <div className="min-h-screen bg-gray-50">
             <div className="container mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Sidebar */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-8">
-                            <Suspense fallback={<div className="animate-pulse bg-gray-900 h-96 rounded-lg" />}>
+                            <Suspense fallback={<div className="animate-pulse bg-gray-200 h-96 rounded-lg" />}>
                                 <DocsSidebar />
                             </Suspense>
                         </div>
@@ -21,7 +21,7 @@ export default function DocsLayout({
 
                     {/* Main content */}
                     <div className="lg:col-span-3">
-                        <div className="bg-gray-950 rounded-lg shadow-xl border border-gray-900 min-h-[600px]">
+                        <div className="bg-white rounded-lg shadow-lg border border-gray-200 min-h-[600px]">
                             {children}
                         </div>
                     </div>

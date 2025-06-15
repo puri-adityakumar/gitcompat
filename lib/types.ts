@@ -73,6 +73,16 @@ export interface CompatibilityAnalysis {
     analysisDate: string
     developerA: string
     developerB: string
+    customPrompt?: string | null
+    aiInsights?: {
+        matchCategory: string
+        technicalDetails: any
+        collaborationDetails: any
+        workStyleDetails: any
+        successPrediction: any
+        recommendedApproach: any
+        customFocusInsights?: string[] | null
+    }
 }
 
 export interface ApiResponse<T> {

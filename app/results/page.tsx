@@ -22,7 +22,8 @@ import {
     Lightbulb,
     MapPin,
     Building,
-    Calendar
+    Calendar,
+    BrainCircuit
 } from "lucide-react"
 import { DeveloperAnalysis, CompatibilityAnalysis } from "@/lib/types"
 import { formatNumber } from "@/lib/utils"
@@ -245,6 +246,21 @@ export default function ResultsPage() {
                     <p className="text-neutral-400 text-lg">
                         Analysis for {userA} and {userB}
                     </p>
+
+                    {/* Custom Prompt Display */}
+                    {compatibility.customPrompt && (
+                        <div className="mt-6 max-w-3xl mx-auto">
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                                <div className="flex items-center mb-2">
+                                    <BrainCircuit className="h-4 w-4 text-blue-400 mr-2" />
+                                    <span className="text-sm font-medium text-blue-400">Custom Analysis Focus</span>
+                                </div>
+                                <p className="text-neutral-300 text-sm italic">
+                                    "{compatibility.customPrompt}"
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Overall Compatibility Score */}
@@ -288,6 +304,24 @@ export default function ResultsPage() {
                     <UserProfile analysis={analysisA} title="Developer A" />
                     <UserProfile analysis={analysisB} title="Developer B" />
                 </div>
+
+                {/* Custom Focus Insights */}
+                {compatibility.aiInsights?.customFocusInsights && compatibility.aiInsights.customFocusInsights.length > 0 && (
+                    <div className="mb-8 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-6">
+                        <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                            <BrainCircuit className="h-5 w-5 mr-2 text-blue-400" />
+                            Custom Focus Insights
+                        </h3>
+                        <ul className="space-y-3">
+                            {compatibility.aiInsights.customFocusInsights.map((insight, index) => (
+                                <li key={index} className="text-neutral-300 text-sm flex items-start">
+                                    <span className="w-2 h-2 bg-blue-400 rounded-full mr-3 mt-2 flex-shrink-0"></span>
+                                    {insight}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
 
                 {/* Detailed Analysis */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

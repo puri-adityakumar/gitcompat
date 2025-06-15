@@ -84,6 +84,7 @@ export async function POST(request: Request) {
             analysisDate: new Date().toISOString(),
             developerA: userA,
             developerB: userB,
+            customPrompt: customPrompt || null,
             // Additional AI insights
             aiInsights: {
                 matchCategory: llmResult.match_category,
@@ -91,7 +92,8 @@ export async function POST(request: Request) {
                 collaborationDetails: llmResult.collaboration_compatibility,
                 workStyleDetails: llmResult.work_style_compatibility,
                 successPrediction: llmResult.success_prediction,
-                recommendedApproach: llmResult.recommended_collaboration_approach
+                recommendedApproach: llmResult.recommended_collaboration_approach,
+                customFocusInsights: llmResult.custom_focus_insights || null
             }
         }
 

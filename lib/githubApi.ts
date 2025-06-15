@@ -1045,10 +1045,20 @@ PROVIDE A DETAILED COMPATIBILITY ANALYSIS IN THE FOLLOWING JSON FORMAT:
   "next_steps": [
     "Immediate action 1",
     "Immediate action 2"
-  ]
+  ]${customPrompt ? `,
+  "custom_focus_insights": [
+    "Specific insight 1 addressing the custom focus",
+    "Specific insight 2 addressing the custom focus",
+    "Specific insight 3 addressing the custom focus"
+  ]` : ''}
 }
 
-ANALYSIS CRITERIA:
+${customPrompt ? `SPECIAL ANALYSIS FOCUS:
+${customPrompt}
+
+IMPORTANT: Please tailor your entire analysis to address this specific focus while maintaining the required JSON structure. Adjust your scoring, strengths, challenges, and recommendations to directly address the custom requirements above.
+
+` : ''}ANALYSIS CRITERIA:
 - Consider both complementary skills (different but useful) and overlapping skills (common ground)
 - Factor in time zones, activity patterns, and communication availability
 - Evaluate learning potential for both developers
@@ -1056,12 +1066,8 @@ ANALYSIS CRITERIA:
 - Assess collaboration experience and team readiness
 - Look for potential personality/work style conflicts
 - Consider recent activity levels and availability
+${customPrompt ? `- PRIORITIZE the custom focus request above in all aspects of your analysis` : ''}
 
-${customPrompt ? `\nSPECIAL FOCUS REQUEST:
-${customPrompt}
-
-Please incorporate this specific focus into your analysis and tailor your recommendations accordingly.\n` : ''}
-
-Be specific, actionable, and honest in your assessment. Focus on practical collaboration advice.`
+Be specific, actionable, and honest in your assessment. Focus on practical collaboration advice${customPrompt ? ' that directly addresses the custom requirements' : ''}.`
     }
 } 

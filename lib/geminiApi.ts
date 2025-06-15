@@ -43,6 +43,7 @@ interface LLMCompatibilityResult {
         long_term: string
     }
     next_steps: string[]
+    custom_focus_insights?: string[]
 }
 
 export class GeminiCompatibilityAnalyzer {
@@ -111,8 +112,11 @@ export class GeminiCompatibilityAnalyzer {
         } catch (error: any) {
             console.error('❌ Error with Gemini API (new SDK):', error.message)
 
+            // Check if prompt contains custom focus by looking for "SPECIAL ANALYSIS FOCUS"
+            const hasCustomPrompt = prompt.includes('SPECIAL ANALYSIS FOCUS')
+
             // Fallback response if Gemini fails
-            return this.createFallbackResponse(error.message)
+            return this.createFallbackResponse(error.message, hasCustomPrompt)
         }
     }
 
@@ -211,7 +215,7 @@ export class GeminiCompatibilityAnalyzer {
         }
     }
 
-    private createFallbackResponse(errorMessage: string): LLMCompatibilityResult {
+    private createFallbackResponse(errorMessage: string, hasCustomPrompt: boolean = false): LLMCompatibilityResult {
         console.log('🔄 Creating fallback compatibility analysis...')
 
         return {
@@ -263,7 +267,14 @@ export class GeminiCompatibilityAnalyzer {
                 'Schedule an initial video call to discuss collaboration goals',
                 'Set up a test project to evaluate working compatibility',
                 `Note: AI analysis failed: ${errorMessage}`
-            ]
+            ],
+            ...(hasCustomPrompt && {
+                custom_focus_insights: [
+                    'Custom analysis was requested but AI service is currently unavailable',
+                    'Please retry the analysis later for specialized insights',
+                    'Manual review is recommended for the specific focus areas requested'
+                ]
+            })
         }
     }
 

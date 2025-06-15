@@ -15,37 +15,29 @@ export default function Hero() {
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-neutral-900 text-neutral-300 border border-neutral-800 mb-6">
-            <Sparkles className="w-4 h-4 mr-2 text-yellow-400" />
-            AI-Powered Developer Matchmaking
+            <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+            AI-Powered Developer Matching
           </div>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 tracking-tight">
-            Meet Your Perfect
+            Find Your Perfect
             <br />
             <span className="gradient-text">
-              Coding Soulmate
+              Pair Programming
             </span>
             <br />
-            in Seconds! 🚀
+            Partner
           </h1>
 
           <p className="text-lg sm:text-xl text-neutral-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Stop coding alone! Our AI analyzes GitHub profiles to find developers who complement your skills,
-            match your vibe, and share your passion for building amazing things together.
+            Analyze GitHub profiles using advanced AI to determine compatibility between developers and find your ideal coding partner.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex justify-center">
             <Link href="/analyze">
-              <Button className="gradient-button-glow text-white font-medium px-8 py-4 rounded-lg text-lg">
-                <Zap className="mr-2 h-5 w-5" />
-                Find My Match
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/analyze">
-              <Button className="bg-neutral-800 text-white hover:bg-neutral-700 font-medium px-6 py-3 rounded-lg border border-neutral-600">
-                Let's Analyze
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button className="gradient-button-glow text-white font-medium px-8 py-4 rounded-lg text-lg relative z-10">
+                <ArrowRight className="mr-2 h-5 w-5" />
+                Start Analysis
               </Button>
             </Link>
           </div>

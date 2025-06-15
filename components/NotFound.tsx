@@ -35,7 +35,7 @@ export default function NotFound() {
                     <span
                         className="text-[8rem] sm:text-[12rem] lg:text-[16rem] xl:text-[20rem] font-black tracking-tighter"
                         style={{
-                            fontFamily: "'Ubuntu', sans-serif",
+                            fontFamily: "'Montserrat', sans-serif",
                             color: "#1a365d",
                             textShadow: "0 4px 8px rgba(0,0,0,0.3)"
                         }}
@@ -54,7 +54,7 @@ export default function NotFound() {
                     <span
                         className="text-[8rem] sm:text-[12rem] lg:text-[16rem] xl:text-[20rem] font-black tracking-tighter"
                         style={{
-                            fontFamily: "'Ubuntu', sans-serif",
+                            fontFamily: "'Montserrat', sans-serif",
                             color: "#1a365d",
                             textShadow: "0 4px 8px rgba(0,0,0,0.3)"
                         }}
@@ -67,7 +67,7 @@ export default function NotFound() {
                 <h2
                     className="text-xl sm:text-2xl lg:text-3xl font-semibold"
                     style={{
-                        fontFamily: "'Ubuntu', sans-serif",
+                        fontFamily: "'Montserrat', sans-serif",
                         color: "#2d3748"
                     }}
                 >

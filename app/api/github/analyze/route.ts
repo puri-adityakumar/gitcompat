@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { githubApi, GitHubDataProcessor } from '@/lib/githubApi'
 import { geminiAnalyzer } from '@/lib/geminiApi'
 import { DeveloperAnalysis, ApiResponse } from '@/lib/types'
+import { generateResultId } from '@/lib/utils'
 
 export async function POST(request: Request) {
     try {
@@ -115,13 +116,35 @@ export async function POST(request: Request) {
 
         console.log('\n========== End of AI Analysis ==========\n')
 
+        // Generate unique ID and store results
+        const resultId = generateResultId()
+        const resultsData = {
+            userA: analysisA,
+            userB: analysisB,
+            compatibility: compatibilityResponse,
+            llmExport
+        }
+
+        // Store results for shareable links
+        try {
+            const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+            await fetch(`${baseUrl}/api/results/${resultId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(resultsData)
+            })
+        } catch (error) {
+            console.error('Failed to store results for sharing:', error)
+            // Continue anyway - the analysis will still work, just won't be shareable
+        }
+
         return NextResponse.json({
             success: true,
             data: {
-                userA: analysisA,
-                userB: analysisB,
-                compatibility: compatibilityResponse,
-                llmExport
+                ...resultsData,
+                resultId
             }
         } as ApiResponse<any>)
 

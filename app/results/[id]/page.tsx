@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
@@ -23,7 +23,10 @@ import {
     MapPin,
     Building,
     Calendar,
-    BrainCircuit
+    BrainCircuit,
+    Share2,
+    Copy,
+    Check
 } from "lucide-react"
 import { DeveloperAnalysis, CompatibilityAnalysis } from "@/lib/types"
 import { formatNumber } from "@/lib/utils"
@@ -34,28 +37,70 @@ interface ResultsData {
     compatibility: CompatibilityAnalysis
 }
 
-export default function ResultsPage() {
+export default function DynamicResultsPage() {
     const [results, setResults] = useState<ResultsData | null>(null)
     const [loading, setLoading] = useState(true)
-    const searchParams = useSearchParams()
-    const router = useRouter()
-    const userA = searchParams.get('userA')
-    const userB = searchParams.get('userB')
+    const [error, setError] = useState<string | null>(null)
+    const [copied, setCopied] = useState(false)
+    const params = useParams()
+    const resultId = params.id as string
 
     useEffect(() => {
-        // Check if there are query params indicating this is an old-style results URL
-        if (userA && userB) {
-            // Redirect to analyze page with a message
-            router.push('/analyze')
-            return
+        const fetchResults = async () => {
+            if (!resultId) {
+                setError("Invalid result ID")
+                setLoading(false)
+                return
+            }
+
+            try {
+                const response = await fetch(`/api/results/${resultId}`)
+                const data = await response.json()
+
+                if (!data.success) {
+                    setError(data.error?.message || "Failed to load results")
+                    setLoading(false)
+                    return
+                }
+
+                setResults(data.data)
+            } catch (err) {
+                console.error("Error fetching results:", err)
+                setError("Network error. Please check your connection and try again.")
+            } finally {
+                setLoading(false)
+            }
         }
 
-        const storedResults = sessionStorage.getItem('compatibilityResults')
-        if (storedResults) {
-            setResults(JSON.parse(storedResults))
+        fetchResults()
+    }, [resultId])
+
+    const handleCopyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2000)
+        } catch (err) {
+            console.error("Failed to copy link:", err)
         }
-        setLoading(false)
-    }, [userA, userB])
+    }
+
+    const handleShare = async () => {
+        if (navigator.share && results) {
+            try {
+                await navigator.share({
+                    title: `GitCompat - ${results.compatibility.developerA} & ${results.compatibility.developerB} Compatibility`,
+                    text: `Check out this developer compatibility analysis between ${results.compatibility.developerA} and ${results.compatibility.developerB}!`,
+                    url: window.location.href
+                })
+            } catch (err) {
+                console.error("Error sharing:", err)
+                handleCopyLink()
+            }
+        } else {
+            handleCopyLink()
+        }
+    }
 
     if (loading) {
         return (
@@ -77,7 +122,7 @@ export default function ResultsPage() {
         )
     }
 
-    if (!results) {
+    if (error || !results) {
         return (
             <div className="min-h-screen bg-black relative overflow-hidden">
                 {/* Floating Orbs */}
@@ -90,12 +135,18 @@ export default function ResultsPage() {
                 <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
                     <div className="text-center relative z-10">
                         <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-                        <h1 className="text-2xl font-bold text-white mb-2">No <span className="gradient-text">Results</span> Found</h1>
-                        <p className="text-neutral-400 mb-4">Please run an analysis first.</p>
+                        <h1 className="text-2xl font-bold text-white mb-2">
+                            {error || "Results Not Found"}
+                        </h1>
+                        <p className="text-neutral-400 mb-4">
+                            {error === "Results not found or expired"
+                                ? "These results may have expired or the link is invalid."
+                                : "Please check the link and try again."}
+                        </p>
                         <Link href="/analyze">
                             <Button className="gradient-button text-white">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Analysis
+                                Start New Analysis
                             </Button>
                         </Link>
                     </div>
@@ -252,8 +303,37 @@ export default function ResultsPage() {
                         <span className="gradient-text">Compatibility</span> Results
                     </h1>
                     <p className="text-neutral-400 text-lg">
-                        Analysis for {userA} and {userB}
+                        Analysis for {compatibility.developerA} and {compatibility.developerB}
                     </p>
+
+                    {/* Share Button */}
+                    <div className="mt-6 flex justify-center gap-3">
+                        <Button
+                            onClick={handleShare}
+                            variant="outline"
+                            className="bg-neutral-900 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        >
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Share Results
+                        </Button>
+                        <Button
+                            onClick={handleCopyLink}
+                            variant="outline"
+                            className="bg-neutral-900 border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        >
+                            {copied ? (
+                                <>
+                                    <Check className="h-4 w-4 mr-2" />
+                                    Copied!
+                                </>
+                            ) : (
+                                <>
+                                    <Copy className="h-4 w-4 mr-2" />
+                                    Copy Link
+                                </>
+                            )}
+                        </Button>
+                    </div>
 
                     {/* Custom Prompt Display */}
                     {compatibility.customPrompt && (

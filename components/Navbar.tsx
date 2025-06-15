@@ -17,7 +17,7 @@ const Navbar = () => {
 
     // Determine back button destination based on current route
     const getBackDestination = () => {
-        if (pathname === '/results') {
+        if (pathname === '/results' || pathname.startsWith('/results/')) {
             return '/analyze'
         }
         return '/' // For analyze, contribute, or any other route, go to home

@@ -1,30 +1,34 @@
-import { Github, Brain, Users, Rocket, Sparkles } from "lucide-react"
+import { Github, Brain, BarChart3, Rocket, Sparkles, Database } from "lucide-react"
 
 export default function HowItWorks() {
     const steps = [
         {
             icon: Github,
-            title: "Share Your GitHub",
-            description: "Just drop in your GitHub username and let us peek at your amazing projects! We promise we won't judge your commit messages. 😉",
-            step: "01"
+            title: "GitHub Data Collection",
+            description: "We fetch comprehensive data from GitHub API including your repositories, commit patterns, languages, collaboration history, and activity metrics across your entire coding journey.",
+            step: "01",
+            details: "Profile • Repositories • Commits • Languages • Contributors"
+        },
+        {
+            icon: BarChart3,
+            title: "Algorithmic Processing",
+            description: "Our algorithms analyze your coding patterns, calculate activity scores, collaboration metrics, and technical preferences to build a detailed developer profile.",
+            step: "02",
+            details: "Activity Patterns • Code Quality • Collaboration Style"
         },
         {
             icon: Brain,
-            title: "AI Works Its Magic",
-            description: "Our super-smart AI analyzes your coding style, favorite languages, and collaboration patterns faster than you can say 'Hello World!'",
-            step: "02"
-        },
-        {
-            icon: Users,
-            title: "Find Your Match",
-            description: "We'll present you with developers who complement your skills and share your passion. It's like Tinder, but for code nerds! 💻❤️",
-            step: "03"
+            title: "AI-Powered Analysis",
+            description: "Gemini AI processes both developer profiles to determine technical compatibility, work style alignment, and collaboration potential using advanced machine learning.",
+            step: "03",
+            details: "Technical Match • Work Style • Success Prediction"
         },
         {
             icon: Rocket,
-            title: "Start Building Together",
-            description: "Connect, collaborate, and create something amazing together! Who knows? You might just build the next big thing! 🚀",
-            step: "04"
+            title: "Detailed Results",
+            description: "Receive comprehensive compatibility analysis with specific scores, strengths, challenges, and actionable recommendations for successful collaboration.",
+            step: "04",
+            details: "Compatibility Score • Recommendations • Next Steps"
         }
     ]
 
@@ -33,21 +37,21 @@ export default function HowItWorks() {
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
                     <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-neutral-900 text-neutral-300 border border-neutral-800 mb-6">
-                        <Rocket className="w-4 h-4 mr-2 text-blue-400" />
-                        The Magic Process
+                        <Database className="w-4 h-4 mr-2 text-green-400" />
+                        Technical Process
                     </div>
                     <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 tracking-tight">
-                        <span className="gradient-text">How It Works</span> ✨
+                        <span className="gradient-text">How It Works</span>
                     </h2>
                     <p className="text-lg text-neutral-400 max-w-2xl mx-auto">
-                        From zero to coding partner in just 4 simple steps. It's so easy, even your cat could do it! 🐱
+                        Advanced GitHub API integration combined with AI analysis to deliver precise developer compatibility insights.
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {steps.map((step, index) => (
                         <div key={index} className="relative group">
-                            <div className="glass-card p-6 hover:scale-105 transition-all duration-300 text-center">
+                            <div className="glass-card p-6 hover:scale-105 transition-all duration-300 text-center h-full">
                                 <div className="flex-shrink-0 w-12 h-12 gradient-button-glow text-white rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-300 group-hover:rotate-12 mx-auto mb-4">
                                     {step.step}
                                 </div>
@@ -57,9 +61,12 @@ export default function HowItWorks() {
                                 <h3 className="text-lg font-semibold text-white mb-3">
                                     {step.title}
                                 </h3>
-                                <p className="text-neutral-400 text-sm leading-relaxed">
+                                <p className="text-neutral-400 text-sm leading-relaxed mb-4">
                                     {step.description}
                                 </p>
+                                <div className="text-xs text-neutral-500 font-mono bg-neutral-900/50 px-3 py-2 rounded-md border border-neutral-800">
+                                    {step.details}
+                                </div>
                             </div>
 
                             {/* Connecting Arrow */}
@@ -74,19 +81,28 @@ export default function HowItWorks() {
                     ))}
                 </div>
 
-                {/* Fun Call to Action */}
+                {/* Technical Details */}
                 <div className="mt-16 text-center">
                     <div className="glass-card p-8 inline-block">
                         <h3 className="text-xl font-bold text-white mb-3">
-                            Ready to meet your coding soulmate? 💕
+                            Powered by Advanced Technology
                         </h3>
                         <p className="text-neutral-400 mb-4">
-                            Join the revolution of smarter developer collaboration!
+                            GitHub API integration, algorithmic analysis, and Gemini AI for precise compatibility matching.
                         </p>
-                        <div className="flex items-center justify-center space-x-2 text-sm text-neutral-500">
-                            <Sparkles className="w-4 h-4" />
-                            <span>No awkward small talk required</span>
-                            <Sparkles className="w-4 h-4" />
+                        <div className="flex items-center justify-center space-x-6 text-sm text-neutral-500">
+                            <div className="flex items-center space-x-2">
+                                <Github className="w-4 h-4" />
+                                <span>GitHub API</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <BarChart3 className="w-4 h-4" />
+                                <span>Algorithm</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Brain className="w-4 h-4" />
+                                <span>Gemini AI</span>
+                            </div>
                         </div>
                     </div>
                 </div>

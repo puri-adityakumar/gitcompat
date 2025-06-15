@@ -918,7 +918,7 @@ export class GitHubDataProcessor {
         return totalStars > 0 ? Number((totalForks / totalStars).toFixed(2)) : 0
     }
 
-    static createLLMPrompt(processedData: { userA: ProcessedDeveloper, userB: ProcessedDeveloper }): string {
+    static createLLMPrompt(processedData: { userA: ProcessedDeveloper, userB: ProcessedDeveloper }, customPrompt?: string): string {
         return `You are an expert software development consultant analyzing GitHub profiles to determine pair programming compatibility.
 
 ANALYZE THE FOLLOWING TWO DEVELOPERS:
@@ -1056,6 +1056,11 @@ ANALYSIS CRITERIA:
 - Assess collaboration experience and team readiness
 - Look for potential personality/work style conflicts
 - Consider recent activity levels and availability
+
+${customPrompt ? `\nSPECIAL FOCUS REQUEST:
+${customPrompt}
+
+Please incorporate this specific focus into your analysis and tailor your recommendations accordingly.\n` : ''}
 
 Be specific, actionable, and honest in your assessment. Focus on practical collaboration advice.`
     }

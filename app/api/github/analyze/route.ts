@@ -6,7 +6,7 @@ import { DeveloperAnalysis, ApiResponse } from '@/lib/types'
 export async function POST(request: Request) {
     try {
         // console.log('\n========== Enhanced GitHub Compatibility Analysis ==========')
-        const { userA, userB } = await request.json()
+        const { userA, userB, customPrompt } = await request.json()
 
         if (!userA || !userB) {
             return NextResponse.json({
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
         console.log(`${userB}:`, processedData.userB.technical_profile.primary_languages)
 
         // Create LLM prompt
-        const prompt = GitHubDataProcessor.createLLMPrompt(processedData)
+        const prompt = GitHubDataProcessor.createLLMPrompt(processedData, customPrompt)
         console.log('\n📝 Generated AI prompt (length:', prompt.length, 'characters)')
 
         // Get AI-powered compatibility analysis

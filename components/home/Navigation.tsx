@@ -31,8 +31,8 @@ export default function Navigation() {
                         </Link>
                     </div>
                     <Link href="/contribute">
-                        <Button className="gradient-button-glow text-white font-medium px-6 py-3 rounded-lg relative overflow-hidden">
-                            <span className="relative z-10">Contribute ✨</span>
+                        <Button variant="outline" className="contribute-button-green text-white font-medium px-6 py-3 rounded-lg border-white/20 hover:text-white">
+                            Contribute 
                         </Button>
                     </Link>
                 </div>

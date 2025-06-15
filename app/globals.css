@@ -181,6 +181,11 @@
     transform: translateY(-1px) scale(1.02);
   }
 
+  .contribute-button-green:hover {
+    background-color: rgba(34, 197, 94, 0.3) !important;
+    border-color: rgba(34, 197, 94, 0.5) !important;
+  }
+
   .floating-orb {
     position: absolute;
     border-radius: 50%;

@@ -29,7 +29,7 @@ const Navbar = () => {
 
     return (
         <div className="flex justify-center w-full py-6 px-4">
-            <div className="flex items-center justify-between px-6 py-3 bg-gradient-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-md border border-white/20 rounded-full shadow-lg w-full max-w-3xl relative z-10">
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-orange-500/5 via-blue-500/10 to-orange-500/5 backdrop-blur-md border border-white/20 rounded-full shadow-lg w-full max-w-xl relative z-10">
                 {/* Logo */}
                 <Link href="/" className="flex items-center">
                     <motion.div
@@ -50,7 +50,7 @@ const Navbar = () => {
                 </Link>
 
                 {/* Desktop Navigation */}
-                <nav className="hidden md:flex items-center space-x-6">
+                <nav className="hidden md:flex items-center space-x-4">
                     {["Home", "Contribute"].map((item) => (
                         <motion.div
                             key={item}

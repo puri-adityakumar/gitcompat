@@ -4,18 +4,18 @@ export default function Features() {
   const features = [
     {
       icon: Database,
-      title: "GitHub Data Analysis",
-      description: "We collect comprehensive data from GitHub API including repositories, commit patterns, language preferences, and collaboration history to build detailed developer profiles."
+      title: "GitHub Data Collection",
+      description: "We fetch comprehensive developer data through GitHub API, including repository statistics, commit frequency, programming languages, contribution patterns, and project collaboration metrics to create detailed profiles."
     },
     {
       icon: BarChart3,
-      title: "Advanced Scoring System",
-      description: "Our proprietary scoring algorithm evaluates coding patterns, project complexity, and development activity to generate compatibility scores between developers."
+      title: "Algorithmic Score Generation",
+      description: "Our advanced algorithms process the collected data to calculate compatibility scores based on coding style similarity, technology stack overlap, activity patterns, and collaboration preferences between developers."
     },
     {
       icon: Brain,
-      title: "AI-Powered Insights",
-      description: "Smart AI analysis processes the generated reports to provide intelligent recommendations and detailed compatibility assessments for optimal developer pairing."
+      title: "AI-Enhanced Analysis",
+      description: "The generated compatibility reports are processed through our AI system to provide intelligent insights, detailed explanations, and personalized recommendations for successful developer partnerships."
     }
   ]
 
@@ -51,26 +51,7 @@ export default function Features() {
           ))}
         </div>
 
-        {/* Technical Stats Section */}
-        <div className="mt-16 glass-card p-8 text-center">
-          <h3 className="text-2xl font-bold text-white mb-6">
-            Platform Capabilities
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <div className="text-3xl font-bold gradient-text mb-2">50+</div>
-              <div className="text-neutral-400">Data Points Analyzed</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold gradient-text mb-2">AI</div>
-              <div className="text-neutral-400">Smart Analysis Engine</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold gradient-text mb-2">Real-time</div>
-              <div className="text-neutral-400">GitHub API Integration</div>
-            </div>
-          </div>
-        </div>
+
       </div>
     </section>
   )

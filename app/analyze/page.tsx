@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import UniversalNavbar from "@/components/UniversalNavbar"
+import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import AnalyzeHero from "@/components/analyze/AnalyzeHero"
 import AnalysisForm from "@/components/analyze/AnalysisForm"
@@ -23,7 +23,7 @@ export default function AnalyzePage() {
             <div className="floating-orb floating-orb-2"></div>
             <div className="floating-orb floating-orb-3"></div>
 
-            <UniversalNavbar />
+            <Navbar />
 
             <main className="max-w-4xl mx-auto px-4 py-16 relative z-10">
                 <AnalyzeHero />

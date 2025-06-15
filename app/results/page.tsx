@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import UniversalNavbar from "@/components/UniversalNavbar"
+import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -57,7 +57,7 @@ export default function ResultsPage() {
                 <div className="floating-orb floating-orb-2"></div>
                 <div className="floating-orb floating-orb-3"></div>
 
-                <UniversalNavbar />
+                <Navbar />
 
                 <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
                     <div className="text-center relative z-10">
@@ -77,7 +77,7 @@ export default function ResultsPage() {
                 <div className="floating-orb floating-orb-2"></div>
                 <div className="floating-orb floating-orb-3"></div>
 
-                <UniversalNavbar />
+                <Navbar />
 
                 <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
                     <div className="text-center relative z-10">
@@ -231,7 +231,7 @@ export default function ResultsPage() {
             <div className="floating-orb floating-orb-2"></div>
             <div className="floating-orb floating-orb-3"></div>
 
-            <UniversalNavbar />
+            <Navbar />
 
             <main className="max-w-7xl mx-auto px-4 py-8 relative z-10">
                 {/* Header */}

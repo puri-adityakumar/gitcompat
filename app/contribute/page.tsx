@@ -1,6 +1,6 @@
 "use client"
 
-import UniversalNavbar from "@/components/UniversalNavbar"
+import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
 import { Wrench, Code, GitBranch, Users } from "lucide-react"
@@ -13,7 +13,7 @@ export default function ContributePage() {
             <div className="floating-orb floating-orb-2"></div>
             <div className="floating-orb floating-orb-3"></div>
 
-            <UniversalNavbar />
+            <Navbar />
 
             <main className="max-w-4xl mx-auto px-4 py-16 relative z-10">
                 {/* Hero Section */}

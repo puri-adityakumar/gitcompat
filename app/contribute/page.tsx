@@ -3,6 +3,7 @@
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
+import NotificationModal from "@/components/contribute/NotificationModal"
 import { Wrench, Code, GitBranch, Users } from "lucide-react"
 
 export default function ContributePage() {
@@ -31,8 +32,8 @@ export default function ContributePage() {
                     </p>
                 </div>
 
-                {/* Work in Progress Card */}
-                <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-2xl p-8 max-w-2xl mx-auto mb-16">
+                {/* Work in Progress Card -- activate later*/}
+                {/* <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-2xl p-8 max-w-2xl mx-auto mb-16">
                     <div className="flex items-center mb-6">
                         <Wrench className="h-6 w-6 text-neutral-300 mr-3" />
                         <h2 className="text-xl font-semibold text-white">Work in <span className="gradient-text">Progress</span></h2>
@@ -59,7 +60,7 @@ export default function ContributePage() {
                             </Button>
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Info Cards */}
                 <div className="grid md:grid-cols-2 gap-8">
@@ -86,12 +87,11 @@ export default function ContributePage() {
                         <p className="text-neutral-400 text-sm mb-4">
                             Want to be the first to know when contribution opportunities become available?
                         </p>
-                        <Button
-                            className="w-full gradient-button text-white font-medium"
-                            disabled
-                        >
-                            Notify Me (Coming Soon)
-                        </Button>
+                        <NotificationModal>
+                            <Button className="w-full gradient-button text-white font-medium">
+                                Notify Me
+                            </Button>
+                        </NotificationModal>
                     </div>
                 </div>
             </main>

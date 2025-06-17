@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Work_Sans, Epilogue } from "next/font/google";
+import { Analytics } from '@vercel/analytics/react';
 import "./globals.css";
 
 const workSans = Work_Sans({
@@ -29,6 +30,27 @@ export const metadata: Metadata = {
     description: "AI-powered GitHub profile analysis for pair programming compatibility",
     type: "website",
     images: ['/Logo.png'],
+    url: 'https://gitcompat.vercel.app',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "GitCompat - Find Your Perfect Pair Programming Partner",
+    description: "AI-powered GitHub profile analysis for pair programming compatibility",
+    images: ['/Logo.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
   },
 };
 
@@ -42,11 +64,13 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/Logo.png" sizes="any" />
         <link rel="apple-touch-icon" href="/Logo.png" />
+        <link rel="canonical" href="https://gitcompat.vercel.app" />
       </head>
       <body
         className={`${workSans.variable} ${epilogue.variable} antialiased font-sans`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );

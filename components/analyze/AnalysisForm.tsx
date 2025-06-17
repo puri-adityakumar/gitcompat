@@ -81,7 +81,30 @@ export default function AnalysisForm({ userA, userB, onUserAChange, onUserBChang
                         setErrors({ userA: errorMessage })
                     }
                 } else if (result.error?.type === 'RATE_LIMITED') {
-                    setErrors({ userA: 'GitHub API rate limit exceeded. Please try again later.' })
+                    const retryMessage = result.error?.retryAfter
+                        ? `GitHub API rate limit exceeded. Please try again after ${result.error.retryAfter} minutes.`
+                        : 'GitHub API rate limit exceeded. Please try again in about 1 hour.'
+                    setErrors({ userA: retryMessage })
+                } else if (result.error?.type === 'ACCESS_DENIED') {
+                    setErrors({ userA: 'Access denied. The user profile or repositories may be private.' })
+                } else if (result.error?.type === 'SERVER_ERROR') {
+                    setErrors({ userA: 'GitHub API is currently unavailable. Please try again in a few minutes.' })
+                } else if (result.error?.service === 'gemini') {
+                    // Handle Gemini API errors
+                    if (result.error.type === 'RATE_LIMITED') {
+                        const retryMessage = result.error?.retryAfter
+                            ? `AI analysis rate limit exceeded. Please try again after ${result.error.retryAfter} minute(s).`
+                            : 'AI analysis rate limit exceeded. Please try again in 1 minute.'
+                        setErrors({ userA: retryMessage })
+                    } else if (result.error.type === 'AUTH_ERROR') {
+                        setErrors({ userA: 'AI service authentication error. Please try again later.' })
+                    } else if (result.error.type === 'CONTENT_ERROR') {
+                        setErrors({ userA: 'Content was filtered by AI safety systems. Please try with different usernames.' })
+                    } else if (result.error.type === 'MODEL_ERROR') {
+                        setErrors({ userA: 'AI model is currently unavailable. Please try again later.' })
+                    } else {
+                        setErrors({ userA: result.error.message || 'AI analysis failed. Please try again.' })
+                    }
                 } else {
                     setErrors({ userA: errorMessage })
                 }

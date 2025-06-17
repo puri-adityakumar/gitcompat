@@ -47,34 +47,71 @@ class GitHubApiService {
             const response: AxiosResponse<T> = await axios.get(url, { headers: this.headers })
             return response.data
         } catch (error: any) {
-            if (error.response?.status === 403 && retries > 0) {
-                const resetTime = error.response.headers['x-ratelimit-reset']
-                const waitTime = resetTime ? (parseInt(resetTime) * 1000 - Date.now()) : 60000
-                await delay(Math.min(waitTime, 60000))
-                return this.makeRequest<T>(url, retries - 1)
+            // Enhanced GitHub API rate limit handling
+            if (error.response?.status === 403) {
+                const rateLimitRemaining = error.response.headers['x-ratelimit-remaining']
+                const rateLimitReset = error.response.headers['x-ratelimit-reset']
+
+                // Check if it's actually a rate limit error
+                if (rateLimitRemaining === '0' || error.response.data?.message?.includes('rate limit')) {
+                    const resetTime = rateLimitReset ? parseInt(rateLimitReset) * 1000 : Date.now() + 3600000
+                    const waitTimeMinutes = Math.ceil((resetTime - Date.now()) / (1000 * 60))
+
+                    throw {
+                        type: 'RATE_LIMITED',
+                        message: `GitHub API rate limit exceeded. Please try again after ${waitTimeMinutes + 10} minutes.`,
+                        retryAfter: waitTimeMinutes + 10, // Add 10 minutes buffer
+                        resetTime: resetTime
+                    }
+                }
+
+                // If it's not rate limit but still 403, could be private repo or other permission issue
+                throw {
+                    type: 'ACCESS_DENIED',
+                    message: 'Access denied to GitHub resource. User or repository may be private.',
+                    statusCode: 403
+                }
             }
+
             throw this.handleApiError(error)
         }
     }
 
     private handleApiError(error: any): GitHubApiError {
+        // If error is already formatted from makeRequest, return it
+        if (error.type && error.message) {
+            return error
+        }
+
         if (error.response?.status === 404) {
             return {
                 type: 'USER_NOT_FOUND',
-                message: 'GitHub user not found',
-                username: error.config?.url?.split('/').pop()
+                message: 'GitHub user not found. Please check the username and try again.',
+                username: error.config?.url?.split('/').pop(),
+                statusCode: 404
             }
         }
-        if (error.response?.status === 403) {
+
+        if (error.response?.status === 422) {
             return {
-                type: 'RATE_LIMITED',
-                message: 'GitHub API rate limit exceeded',
-                retryAfter: error.response.headers['x-ratelimit-reset']
+                type: 'INVALID_REQUEST',
+                message: 'Invalid request to GitHub API. The username may contain invalid characters.',
+                statusCode: 422
             }
         }
+
+        if (error.response?.status >= 500) {
+            return {
+                type: 'SERVER_ERROR',
+                message: 'GitHub API is currently unavailable. Please try again in a few minutes.',
+                statusCode: error.response.status
+            }
+        }
+
         return {
             type: 'UNKNOWN_ERROR',
-            message: error.message || 'Unknown GitHub API error'
+            message: error.message || 'An unexpected error occurred while fetching GitHub data.',
+            statusCode: error.response?.status || 500
         }
     }
 

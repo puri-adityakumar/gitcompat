@@ -112,11 +112,8 @@ export class GeminiCompatibilityAnalyzer {
         } catch (error: any) {
             console.error('❌ Error with Gemini API (new SDK):', error.message)
 
-            // Check if prompt contains custom focus by looking for "SPECIAL ANALYSIS FOCUS"
-            const hasCustomPrompt = prompt.includes('SPECIAL ANALYSIS FOCUS')
-
-            // Fallback response if Gemini fails
-            return this.createFallbackResponse(error.message, hasCustomPrompt)
+            // Handle specific Gemini API errors
+            throw this.handleGeminiError(error)
         }
     }
 
@@ -183,9 +180,60 @@ export class GeminiCompatibilityAnalyzer {
         } catch (error: any) {
             console.error('❌ Error with Gemini streaming API:', error.message)
 
-            // Fallback to regular generation if streaming fails
-            return this.analyzeCompatibility(prompt)
+            // Handle specific Gemini API errors
+            throw this.handleGeminiError(error)
         }
+    }
+
+    private handleGeminiError(error: any): Error {
+        // Handle Gemini API specific errors
+        if (error.message?.includes('quota') || error.message?.includes('rate limit')) {
+            return {
+                type: 'RATE_LIMITED',
+                message: 'Gemini API rate limit exceeded. Please try again after 1 minute.',
+                retryAfter: 1, // 1 minute
+                service: 'gemini'
+            } as any
+        }
+
+        if (error.message?.includes('API key') || error.message?.includes('authentication')) {
+            return {
+                type: 'AUTH_ERROR',
+                message: 'Gemini API authentication failed. Please check the API key configuration.',
+                service: 'gemini'
+            } as any
+        }
+
+        if (error.message?.includes('model not found') || error.message?.includes('model')) {
+            return {
+                type: 'MODEL_ERROR',
+                message: 'Gemini model is currently unavailable. Please try again later.',
+                service: 'gemini'
+            } as any
+        }
+
+        if (error.message?.includes('timeout') || error.message?.includes('network')) {
+            return {
+                type: 'NETWORK_ERROR',
+                message: 'Network error connecting to Gemini API. Please check your connection and try again.',
+                service: 'gemini'
+            } as any
+        }
+
+        if (error.message?.includes('content') || error.message?.includes('safety')) {
+            return {
+                type: 'CONTENT_ERROR',
+                message: 'Content was filtered by Gemini safety systems. Please try with different usernames.',
+                service: 'gemini'
+            } as any
+        }
+
+        // Generic Gemini error
+        return {
+            type: 'GEMINI_ERROR',
+            message: error.message || 'Gemini API error occurred. Please try again.',
+            service: 'gemini'
+        } as any
     }
 
     private validateLLMResponse(response: Record<string, unknown>): void {

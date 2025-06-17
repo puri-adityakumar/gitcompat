@@ -151,11 +151,66 @@ export async function POST(request: Request) {
     } catch (error: any) {
         console.error('\n❌ Error in AI-powered GitHub analysis:', error)
 
+        // Handle GitHub API rate limit errors specifically
+        if (error.type === 'RATE_LIMITED' && error.service !== 'gemini') {
+            return NextResponse.json({
+                success: false,
+                error: {
+                    type: 'RATE_LIMITED',
+                    message: error.message,
+                    retryAfter: error.retryAfter,
+                    statusCode: 429
+                }
+            } as ApiResponse<null>, {
+                status: 429,
+                headers: {
+                    'Retry-After': (error.retryAfter * 60).toString() // Convert minutes to seconds
+                }
+            })
+        }
+
+        // Handle Gemini API errors specifically
+        if (error.service === 'gemini') {
+            const statusCode = error.type === 'RATE_LIMITED' ? 429 :
+                error.type === 'AUTH_ERROR' ? 401 :
+                    error.type === 'CONTENT_ERROR' ? 400 : 500
+
+            const headers: Record<string, string> = {}
+            if (error.type === 'RATE_LIMITED') {
+                headers['Retry-After'] = (error.retryAfter * 60).toString() // Convert minutes to seconds
+            }
+
+            return NextResponse.json({
+                success: false,
+                error: {
+                    type: error.type,
+                    message: error.message,
+                    retryAfter: error.retryAfter,
+                    service: 'gemini',
+                    statusCode
+                }
+            } as ApiResponse<null>, { status: statusCode, headers })
+        }
+
+        // Handle other GitHub API errors
+        if (error.type && ['USER_NOT_FOUND', 'ACCESS_DENIED', 'INVALID_REQUEST', 'SERVER_ERROR'].includes(error.type)) {
+            return NextResponse.json({
+                success: false,
+                error: {
+                    type: error.type,
+                    message: error.message,
+                    username: error.username,
+                    statusCode: error.statusCode || 400
+                }
+            } as ApiResponse<null>, { status: error.statusCode || 400 })
+        }
+
+        // Generic error handling
         return NextResponse.json({
             success: false,
             error: {
-                type: error.type || 'AI_ANALYSIS_ERROR',
-                message: error.message || 'Failed to analyze GitHub users with AI',
+                type: error.type || 'ANALYSIS_ERROR',
+                message: error.message || 'Failed to analyze GitHub users. Please try again.',
                 statusCode: 500
             }
         } as ApiResponse<null>, { status: 500 })

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -22,7 +22,7 @@ interface ResultsData {
     compatibility: CompatibilityAnalysis
 }
 
-export default function ResultsPage() {
+function ResultsContent() {
     const [results, setResults] = useState<ResultsData | null>(null)
     const [loading, setLoading] = useState(true)
     const searchParams = useSearchParams()
@@ -76,5 +76,13 @@ export default function ResultsPage() {
             <AnalysisDetails compatibility={compatibility} />
             <ResultsActions />
         </ResultsLayout>
+    )
+}
+
+export default function ResultsPage() {
+    return (
+        <Suspense fallback={<LoadingState />}>
+            <ResultsContent />
+        </Suspense>
     )
 } 

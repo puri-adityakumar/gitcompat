@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
       wants_to_contribute: answers.contribute === 'yes',
       email: contactInfo.email || null,
       twitter: contactInfo.twitter || null,
-      user_agent: request.headers.get('user-agent') || null,
-      page_url: request.headers.get('referer') || null,
+      user_agent: request.headers.get('user-agent') || undefined,
+      page_url: request.headers.get('referer') || undefined,
       session_id: `feedback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     }
 

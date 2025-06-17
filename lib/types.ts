@@ -96,10 +96,11 @@ export interface ApiResponse<T> {
 }
 
 export interface GitHubApiError {
-    type: 'USER_NOT_FOUND' | 'RATE_LIMITED' | 'UNKNOWN_ERROR' | 'INVALID_TOKEN'
+    type: 'USER_NOT_FOUND' | 'RATE_LIMITED' | 'UNKNOWN_ERROR' | 'INVALID_TOKEN' | 'INVALID_REQUEST' | 'SERVER_ERROR'
     message: string
     username?: string
     retryAfter?: string
+    statusCode?: number
 }
 
 export interface AnalysisRequest {

@@ -111,7 +111,8 @@ export default async function DocPage({ params }: DocPageProps) {
                                     {children}
                                 </p>
                             ),
-                            code: ({ inline, children, className, ...props }) => {
+                            code: ({ children, className, ...props }: any) => {
+                                const inline = props.inline
                                 const match = /language-(\w+)/.exec(className || '')
                                 return inline ? (
                                     <code className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm font-mono border border-gray-300" {...props}>

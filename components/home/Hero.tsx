@@ -49,7 +49,7 @@ export default function Hero() {
         <div className="max-w-4xl mx-auto text-center">
           <div className="glass-card p-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 tracking-tight">
-              Looking for detailed analysis of <span className="gradient-text">pair programmer</span>?
+              Looking for detailed analysis of <span className="gradient-text">pair programmer</span> ?
             </h2>
             <p className="text-neutral-400 mb-8 text-lg">
               It uses algorithm based on activity and AI suggestion to give you the best results.

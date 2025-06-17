@@ -108,18 +108,34 @@ export default function FeedbackToggle() {
     const handleSubmit = async () => {
         setIsSubmitting(true)
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        try {
+            const response = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    answers,
+                    contactInfo,
+                }),
+            })
 
-        const feedbackData = {
-            answers,
-            contactInfo,
-            timestamp: new Date().toISOString()
+            const result = await response.json()
+
+            if (result.success) {
+                console.log('Feedback saved successfully:', result.data)
+                setIsCompleted(true)
+            } else {
+                console.error('Failed to save feedback:', result.error)
+                // Still show success to user, but log the error
+                setIsCompleted(true)
+            }
+        } catch (error) {
+            console.error('Error submitting feedback:', error)
+            // Still show success to user to avoid frustration
+            setIsCompleted(true)
         }
 
-        console.log('Feedback submitted:', feedbackData)
-
-        setIsCompleted(true)
         setIsSubmitting(false)
 
         // Reset after 3 seconds

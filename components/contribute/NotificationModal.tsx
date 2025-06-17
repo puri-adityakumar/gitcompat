@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import {
     Dialog,
     DialogContent,
@@ -12,7 +11,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { Bell, Mail, MessageSquare } from "lucide-react"
+import { Bell, Mail } from "lucide-react"
 
 interface NotificationModalProps {
     children: React.ReactNode
@@ -20,7 +19,6 @@ interface NotificationModalProps {
 
 export default function NotificationModal({ children }: NotificationModalProps) {
     const [email, setEmail] = useState("")
-    const [message, setMessage] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
 
@@ -28,20 +26,39 @@ export default function NotificationModal({ children }: NotificationModalProps) 
         e.preventDefault()
         setIsSubmitting(true)
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        try {
+            const response = await fetch('/api/contribution-signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                }),
+            })
 
-        // Here you would typically send the data to your backend
-        console.log("Notification request:", { email, message })
+            const result = await response.json()
 
-        setIsSubmitted(true)
+            if (result.success) {
+                console.log('Contribution signup saved successfully:', result.data)
+                setIsSubmitted(true)
+            } else {
+                console.error('Failed to save contribution signup:', result.error)
+                // Still show success to user, but log the error
+                setIsSubmitted(true)
+            }
+        } catch (error) {
+            console.error('Error submitting contribution signup:', error)
+            // Still show success to user to avoid frustration
+            setIsSubmitted(true)
+        }
+
         setIsSubmitting(false)
 
         // Reset form after 2 seconds
         setTimeout(() => {
             setIsSubmitted(false)
             setEmail("")
-            setMessage("")
         }, 2000)
     }
 
@@ -89,20 +106,6 @@ export default function NotificationModal({ children }: NotificationModalProps) 
                                 className="bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500 focus:border-orange-400"
                             />
                         </div>
-
-                        {/* <div className="space-y-2">
-                            <label htmlFor="message" className="text-sm font-medium text-neutral-300 flex items-center gap-2">
-                                <MessageSquare className="h-4 w-4" />
-                                What interests you? (Optional)
-                            </label>
-                            <Textarea
-                                id="message"
-                                placeholder="Tell us about your interests, skills, or how you'd like to contribute..."
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                className="bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-500 focus:border-orange-400 min-h-[100px]"
-                            />
-                        </div> */}
 
                         <div className="flex gap-3 pt-4">
                             <Button

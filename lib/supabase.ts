@@ -5,7 +5,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Types for our simplified database schema
+// Simple types for our two tables
 export interface FeedbackData {
   liked_project?: boolean
   helpful_for_devs?: boolean
@@ -26,7 +26,6 @@ export interface FeedbackRecord extends FeedbackData {
 
 export interface ContributionSignupData {
   email: string
-  time_of_response?: string
 }
 
 export interface ContributionSignupRecord extends ContributionSignupData {

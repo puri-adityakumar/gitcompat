@@ -45,7 +45,6 @@ cp env.example .env.local
 npm run dev
 ```
 
-Visit `http://localhost:3000` to start analyzing GitHub profiles!
 
 ## 🛠 Tech Stack
 
@@ -57,42 +56,14 @@ Visit `http://localhost:3000` to start analyzing GitHub profiles!
 - **Charts**: Recharts
 - **Animations**: Framer Motion
 
-## 📊 Features
 
-### GitHub Analysis
-Fetches comprehensive data from GitHub API including user profiles, repositories, commit history, language statistics, and collaboration patterns.
+## 🤝 Contributing - (WIP 🚧)
 
-### AI-Powered Matching
-Uses Google Gemini to analyze developer compatibility across multiple dimensions and provide actionable insights.
-
-### Visual Dashboard
-Interactive charts and metrics display compatibility scores, activity patterns, and detailed recommendations.
-
-## 🤝 Contributing
-
-We welcome contributions! Check out our contribution guides:
+We working on the contribution guideline part, meanwhile you can check docs:
 
 - **[Backend Contributions](./CONTRIBUTE-BACKEND.md)** - API routes, data processing, AI integration
 - **[Frontend Contributions](./CONTRIBUTE-FRONTEND.md)** - UI components, pages, styling
 
-### Development Commands
-
-```bash
-npm run dev      # Start development server
-npm run build    # Build for production  
-npm run start    # Start production server
-npm run lint     # Run ESLint
-```
-
-## 📝 Environment Variables
-
-```bash
-# Optional - increases rate limits from 60 to 5000 requests/hour
-GITHUB_TOKEN=your_github_personal_access_token
-
-# Required for AI analysis features  
-GEMINI_API_KEY=your_google_gemini_api_key
-```
 
 ## 🔄 API Rate Limits
 
@@ -100,19 +71,20 @@ GEMINI_API_KEY=your_google_gemini_api_key
 - **With GitHub token**: 5000 requests/hour
 - **Built-in retry logic** for rate-limited requests
 - **Graceful fallbacks** for inaccessible data
-
-## 📜 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 🚀 Deploy
-
-The easiest way to deploy is using [Vercel](https://vercel.com/new):
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/gitcompat)
+---
 
 ---
 
 <div align="center">
-Built with ❤️ for the developer community
+
+### 💬 Connect 
+
+**Built with ❤️ for the developer community**
+
+[![Twitter Follow](https://img.shields.io/badge/Follow-@adityawaslost-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://x.com/adityawaslost)
+[![GitHub](https://img.shields.io/badge/GitHub-GitCompat-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/puri-adityakumar/gitcompat)
+
+
+**⭐ Star this repo if liked the concept!**
+
 </div>

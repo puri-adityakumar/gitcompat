@@ -30,4 +30,15 @@ export interface ContributionSignupData {
 
 export interface ContributionSignupRecord extends ContributionSignupData {
   id: number
+}
+
+// Analysis results types
+export interface AnalysisResultsData {
+  id: string
+  data: any // JSON data containing the full analysis
+  expires_at: string
+}
+
+export interface AnalysisResultsRecord extends AnalysisResultsData {
+  created_at: string
 } 

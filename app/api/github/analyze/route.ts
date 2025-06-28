@@ -3,6 +3,7 @@ import { githubApi, GitHubDataProcessor } from '@/lib/githubApi'
 import { geminiAnalyzer } from '@/lib/geminiApi'
 import { DeveloperAnalysis, ApiResponse } from '@/lib/types'
 import { generateResultId } from '@/lib/utils'
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: Request) {
     try {
@@ -125,16 +126,23 @@ export async function POST(request: Request) {
             llmExport
         }
 
-        // Store results for shareable links
+        // Store results for shareable links in Supabase
         try {
-            const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
-            await fetch(`${baseUrl}/api/results/${resultId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(resultsData)
-            })
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
+
+            const { error } = await supabase
+                .from('analysis_results')
+                .insert({
+                    id: resultId,
+                    data: resultsData,
+                    expires_at: expiresAt
+                })
+
+            if (error) {
+                console.error('Failed to store results in Supabase:', error)
+            } else {
+                console.log(`✅ Results stored successfully with ID: ${resultId}`)
+            }
         } catch (error) {
             console.error('Failed to store results for sharing:', error)
             // Continue anyway - the analysis will still work, just won't be shareable

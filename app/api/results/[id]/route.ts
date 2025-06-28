@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// In-memory storage for now (in production, use a database)
-const resultsStore = new Map<string, any>()
+import { supabase } from '@/lib/supabase'
 
 export async function GET(
     request: NextRequest,
@@ -21,9 +19,15 @@ export async function GET(
             }, { status: 400 })
         }
 
-        const results = resultsStore.get(id)
+        // Fetch results from Supabase
+        const { data: results, error } = await supabase
+            .from('analysis_results')
+            .select('*')
+            .eq('id', id)
+            .gt('expires_at', new Date().toISOString()) // Only get non-expired results
+            .single()
 
-        if (!results) {
+        if (error || !results) {
             return NextResponse.json({
                 success: false,
                 error: {
@@ -36,7 +40,7 @@ export async function GET(
 
         return NextResponse.json({
             success: true,
-            data: results
+            data: results.data
         })
 
     } catch (error: any) {
@@ -72,21 +76,28 @@ export async function POST(
             }, { status: 400 })
         }
 
-        // Store results with expiration (24 hours)
-        const expiresAt = Date.now() + (24 * 60 * 60 * 1000)
-        resultsStore.set(id, {
-            ...results,
-            expiresAt,
-            createdAt: Date.now()
-        })
+        // Store results in Supabase with expiration (24 hours)
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
 
-        // Clean up expired results periodically
-        setTimeout(() => {
-            const storedResult = resultsStore.get(id)
-            if (storedResult && Date.now() > storedResult.expiresAt) {
-                resultsStore.delete(id)
-            }
-        }, 24 * 60 * 60 * 1000)
+        const { error } = await supabase
+            .from('analysis_results')
+            .insert({
+                id,
+                data: results,
+                expires_at: expiresAt
+            })
+
+        if (error) {
+            console.error('Error storing results in Supabase:', error)
+            return NextResponse.json({
+                success: false,
+                error: {
+                    type: 'SERVER_ERROR',
+                    message: 'Failed to store results',
+                    statusCode: 500
+                }
+            }, { status: 500 })
+        }
 
         return NextResponse.json({
             success: true,

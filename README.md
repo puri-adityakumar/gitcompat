@@ -47,7 +47,7 @@ npm run dev
 
 ## 🛠 Tech Stack
 
-- **Framework**: Next.js 15 with App Router
+- **Framework**: Next.js 15 
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS + Shadcn/ui
 - **AI**: Google Gemini API

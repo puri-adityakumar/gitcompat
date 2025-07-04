@@ -1,0 +1,127 @@
+/**
+ * Centralized configuration system for GitCompat
+ * All environment variables should be accessed through this module
+ */
+
+interface Config {
+    // Database configuration
+    supabase: {
+        url: string
+        anonKey: string
+    }
+
+    // API Keys
+    github: {
+        token?: string
+    }
+
+    gemini: {
+        apiKey?: string
+    }
+
+    // Site configuration
+    site: {
+        verification?: {
+            google?: string
+        }
+        url: string
+    }
+
+    // Environment settings
+    environment: {
+        isProduction: boolean
+        isDevelopment: boolean
+        isTest: boolean
+        nodeEnv: string
+    }
+}
+
+/**
+ * Validates required environment variables and throws descriptive errors
+ */
+function validateConfig(): void {
+    const requiredVars = [
+        { key: 'NEXT_PUBLIC_SUPABASE_URL', value: process.env.NEXT_PUBLIC_SUPABASE_URL },
+        { key: 'NEXT_PUBLIC_SUPABASE_ANON_KEY', value: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY },
+    ]
+
+    const missingVars = requiredVars.filter(({ value }) => !value)
+
+    if (missingVars.length > 0) {
+        throw new Error(
+            `Missing required environment variables: ${missingVars.map(({ key }) => key).join(', ')}\n` +
+            'Please check your .env.local file and ensure all required variables are set.'
+        )
+    }
+}
+
+/**
+ * Creates and validates the application configuration
+ */
+function createConfig(): Config {
+    // Validate required environment variables first
+    validateConfig()
+
+    const nodeEnv = process.env.NODE_ENV || 'development'
+
+    return {
+        supabase: {
+            url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        },
+
+        github: {
+            token: process.env.GITHUB_TOKEN,
+        },
+
+        gemini: {
+            apiKey: process.env.GEMINI_API_KEY,
+        },
+
+        site: {
+            verification: {
+                google: process.env.GOOGLE_SITE_VERIFICATION,
+            },
+            url: process.env.NEXT_PUBLIC_SITE_URL || 'https://gitcompat.vercel.app',
+        },
+
+        environment: {
+            isProduction: nodeEnv === 'production',
+            isDevelopment: nodeEnv === 'development',
+            isTest: nodeEnv === 'test',
+            nodeEnv,
+        },
+    }
+}
+
+/**
+ * Application configuration singleton
+ * This is the main export that should be used throughout the application
+ */
+export const config = createConfig()
+
+/**
+ * Type-safe access to configuration values
+ * Use this for better IntelliSense and type checking
+ */
+export type AppConfig = typeof config
+
+/**
+ * Helper functions for common environment checks
+ */
+export const env = {
+    isProduction: () => config.environment.isProduction,
+    isDevelopment: () => config.environment.isDevelopment,
+    isTest: () => config.environment.isTest,
+    getNodeEnv: () => config.environment.nodeEnv,
+} as const
+
+/**
+ * Helper function to check if an API key is available
+ */
+export const hasApiKey = {
+    github: () => !!config.github.token,
+    gemini: () => !!config.gemini.apiKey,
+} as const
+
+export default config 

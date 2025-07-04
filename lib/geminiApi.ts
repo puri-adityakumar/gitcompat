@@ -1,8 +1,9 @@
 import { GoogleGenAI } from '@google/genai'
+import { config, hasApiKey } from './config'
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+const GEMINI_API_KEY = config.gemini.apiKey
 
-if (!GEMINI_API_KEY) {
+if (!hasApiKey.gemini()) {
     console.warn('GEMINI_API_KEY not found in environment variables')
 }
 

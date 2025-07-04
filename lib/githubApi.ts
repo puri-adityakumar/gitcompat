@@ -1,8 +1,9 @@
 import axios, { AxiosResponse } from 'axios'
 import { GitHubProfile, RepositoryData, CommitData, LanguageStats, DeveloperAnalysis, GitHubApiError } from './types'
+import { config } from './config'
 
 const GITHUB_API_BASE = 'https://api.github.com'
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN
+const GITHUB_TOKEN = config.github.token
 
 // Rate limiting helper
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))

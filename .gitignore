@@ -46,4 +46,5 @@ next-env.d.ts
 #git
 .gitignore
 
-Todos.node_modules
+
+todo.md

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { githubApi, GitHubDataProcessor } from '@/lib/githubApi'
+import { githubApi } from '@/lib/githubApi'
+import { GitHubDataProcessor } from '@/lib/githubDataProcessor'
 import { geminiAnalyzer } from '@/lib/geminiApi'
 import { DeveloperAnalysis, ApiResponse } from '@/lib/types'
 import { generateResultId } from '@/lib/utils'

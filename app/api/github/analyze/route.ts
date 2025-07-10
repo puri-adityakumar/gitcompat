@@ -4,6 +4,7 @@ import { geminiAnalyzer } from '@/lib/geminiApi'
 import { DeveloperAnalysis, ApiResponse } from '@/lib/types'
 import { generateResultId } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
+import { createLLMPrompt } from '@/lib/prompts'
 
 export async function POST(request: Request) {
     try {
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
         console.log(`${userB}:`, processedData.userB.technical_profile.primary_languages)
 
         // Create LLM prompt
-        const prompt = GitHubDataProcessor.createLLMPrompt(processedData, customPrompt)
+        const prompt = createLLMPrompt(processedData, customPrompt)
         console.log('\n📝 Generated AI prompt (length:', prompt.length, 'characters)')
 
         // Get AI-powered compatibility analysis

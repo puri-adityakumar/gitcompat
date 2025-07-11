@@ -65,14 +65,17 @@ function ResultsContent() {
     return (
         <ResultsLayout>
             <ResultsHeader compatibility={compatibility} />
-            <CompatibilityScore compatibility={compatibility} />
-
-            {/* Developer Profiles */}
+            
+            {/* Developer Profiles - First */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <UserProfile analysis={analysisA} title="Developer A" />
                 <UserProfile analysis={analysisB} title="Developer B" />
             </div>
 
+            {/* Overall Compatibility - Second */}
+            <CompatibilityScore compatibility={compatibility} />
+
+            {/* Detailed Analysis - Third */}
             <AnalysisDetails compatibility={compatibility} />
             <ResultsActions />
         </ResultsLayout>

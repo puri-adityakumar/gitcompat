@@ -1,17 +1,12 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { DocsSidebar } from '@/components/docs/DocsSidebar'
-import { env } from '@/lib/config'
 
 export default function DocsLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
-    // Block access in production environment
-    if (env.isProduction()) {
-        notFound()
-    }
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="container mx-auto px-4 py-8">

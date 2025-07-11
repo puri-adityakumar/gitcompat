@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { githubApi, GitHubDataProcessor } from '@/lib/githubApi'
+import { githubApi } from '@/lib/githubApi'
+import { GitHubDataProcessor } from '@/lib/githubDataProcessor'
 import { geminiAnalyzer } from '@/lib/geminiApi'
 import { DeveloperAnalysis, ApiResponse } from '@/lib/types'
 import { generateResultId } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
+import { createLLMPrompt } from '@/lib/prompts'
 
 export async function POST(request: Request) {
     try {
-        // console.log('\n========== Enhanced GitHub Compatibility Analysis ==========')
         const { userA, userB, customPrompt } = await request.json()
 
         if (!userA || !userB) {
@@ -33,40 +34,18 @@ export async function POST(request: Request) {
         }
 
         // Fetch analysis for both users in parallel
-        // console.log('\n🔍 Fetching GitHub data for both users...')
         const [analysisA, analysisB] = await Promise.all([
             githubApi.analyzeUser(userA),
             githubApi.analyzeUser(userB)
         ])
 
-        // console.log('\n📊 GitHub Data Summary:')
-        // console.log(`User A (${userA}):`, {
-        //     repos: analysisA.repositories.length,
-        //     languages: analysisA.languages.length,
-        //     lastCommit: analysisA.activityPattern.daysSinceLastCommit + ' days ago',
-        //     activityPattern: analysisA.activityPattern.timezonePattern
-        // })
-        // console.log(`User B (${userB}):`, {
-        //     repos: analysisB.repositories.length,
-        //     languages: analysisB.languages.length,
-        //     lastCommit: analysisB.activityPattern.daysSinceLastCommit + ' days ago',
-        //     activityPattern: analysisB.activityPattern.timezonePattern
-        // })
-
         // Process data for LLM analysis
-        console.log('\n🔄 Processing data for AI analysis...')
         const processedData = GitHubDataProcessor.processForLLM(analysisA, analysisB)
 
-        console.log('Processed technical profiles:')
-        console.log(`${userA}:`, processedData.userA.technical_profile.primary_languages)
-        console.log(`${userB}:`, processedData.userB.technical_profile.primary_languages)
-
         // Create LLM prompt
-        const prompt = GitHubDataProcessor.createLLMPrompt(processedData, customPrompt)
-        console.log('\n📝 Generated AI prompt (length:', prompt.length, 'characters)')
+        const prompt = createLLMPrompt(processedData, customPrompt)
 
         // Get AI-powered compatibility analysis
-        console.log('\n🤖 Requesting AI compatibility analysis...')
         const llmResult = await geminiAnalyzer.analyzeCompatibility(prompt)
 
         // Create response structure compatible with existing frontend
@@ -106,16 +85,6 @@ export async function POST(request: Request) {
             processedData: processedData,
             prompt: prompt
         }
-
-        console.log('\n✨ AI Compatibility Analysis Results:')
-        console.log(`Overall Score: ${llmResult.compatibility_score}/100 (${llmResult.match_category})`)
-        console.log(`Technical Compatibility: ${llmResult.technical_compatibility.score}/100`)
-        console.log(`Collaboration Compatibility: ${llmResult.collaboration_compatibility.score}/100`)
-        console.log(`Work Style Compatibility: ${llmResult.work_style_compatibility.score}/100`)
-        console.log('Key Strengths:', llmResult.strengths.slice(0, 2).join(', '))
-        console.log('Main Challenges:', llmResult.potential_challenges.slice(0, 2).join(', '))
-
-        console.log('\n========== End of AI Analysis ==========\n')
 
         // Generate unique ID and store results
         const resultId = generateResultId()

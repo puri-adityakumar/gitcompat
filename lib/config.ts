@@ -19,6 +19,10 @@ interface Config {
         apiKey?: string
     }
 
+    sentry: {
+        dsn?: string
+    }
+
     // Site configuration
     site: {
         verification?: {
@@ -78,6 +82,10 @@ function createConfig(): Config {
             apiKey: process.env.GEMINI_API_KEY,
         },
 
+        sentry: {
+            dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+        },
+
         site: {
             verification: {
                 google: process.env.GOOGLE_SITE_VERIFICATION,
@@ -122,6 +130,7 @@ export const env = {
 export const hasApiKey = {
     github: () => !!config.github.token,
     gemini: () => !!config.gemini.apiKey,
+    sentry: () => !!config.sentry.dsn,
 } as const
 
 export default config 

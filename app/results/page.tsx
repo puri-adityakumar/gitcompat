@@ -53,19 +53,6 @@ function ResultsContent() {
 
     return (
         <ResultsLayout>
-            {/* Temporary Storage Warning */}
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-8 max-w-4xl mx-auto">
-                <div className="flex items-center">
-                    <AlertCircle className="h-5 w-5 text-amber-400 mr-3 flex-shrink-0" />
-                    <div>
-                        <h3 className="text-sm font-medium text-amber-400">Temporary Results</h3>
-                        <p className="text-amber-300/80 text-sm mt-1">
-                            These results are only available during your current session. 
-                            Use the export button below to save them as an image for sharing.
-                        </p>
-                    </div>
-                </div>
-            </div>
 
             <ResultsHeader compatibility={compatibility} showShareButtons={true} />
             

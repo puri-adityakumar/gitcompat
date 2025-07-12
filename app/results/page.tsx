@@ -2,9 +2,9 @@
 
 import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
-import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { DeveloperAnalysis, CompatibilityAnalysis } from "@/lib/types"
+import { AlertCircle } from "lucide-react"
 import {
     LoadingState,
     ErrorState,
@@ -25,25 +25,14 @@ interface ResultsData {
 function ResultsContent() {
     const [results, setResults] = useState<ResultsData | null>(null)
     const [loading, setLoading] = useState(true)
-    const searchParams = useSearchParams()
-    const router = useRouter()
-    const userA = searchParams.get('userA')
-    const userB = searchParams.get('userB')
 
     useEffect(() => {
-        // Check if there are query params indicating this is an old-style results URL
-        if (userA && userB) {
-            // Redirect to analyze page with a message
-            router.push('/analyze')
-            return
-        }
-
         const storedResults = sessionStorage.getItem('compatibilityResults')
         if (storedResults) {
             setResults(JSON.parse(storedResults))
         }
         setLoading(false)
-    }, [userA, userB, router])
+    }, [])
 
     if (loading) {
         return <LoadingState />
@@ -53,8 +42,8 @@ function ResultsContent() {
         return (
             <ErrorState
                 title="No Results Found"
-                description="Please run an analysis first."
-                actionText="Back to Analysis"
+                description="Results are temporary and only available during your current session. Please run a new analysis."
+                actionText="Start New Analysis"
                 actionHref="/analyze"
             />
         )
@@ -64,7 +53,21 @@ function ResultsContent() {
 
     return (
         <ResultsLayout>
-            <ResultsHeader compatibility={compatibility} />
+            {/* Temporary Storage Warning */}
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-8 max-w-4xl mx-auto">
+                <div className="flex items-center">
+                    <AlertCircle className="h-5 w-5 text-amber-400 mr-3 flex-shrink-0" />
+                    <div>
+                        <h3 className="text-sm font-medium text-amber-400">Temporary Results</h3>
+                        <p className="text-amber-300/80 text-sm mt-1">
+                            These results are only available during your current session. 
+                            Use the export button below to save them as an image for sharing.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <ResultsHeader compatibility={compatibility} showShareButtons={true} />
             
             {/* Developer Profiles - First */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">

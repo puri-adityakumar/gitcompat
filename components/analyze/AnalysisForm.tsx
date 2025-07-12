@@ -111,14 +111,9 @@ export default function AnalysisForm({ userA, userB, onUserAChange, onUserBChang
                 return
             }
 
-            // Navigate to dynamic results page with unique ID
-            if (result.data.resultId) {
-                router.push(`/results/${result.data.resultId}`)
-            } else {
-                // Fallback: store in sessionStorage and use old route
-                sessionStorage.setItem('compatibilityResults', JSON.stringify(result.data))
-                router.push(`/results?userA=${encodeURIComponent(userA.trim())}&userB=${encodeURIComponent(userB.trim())}`)
-            }
+            // Store results in sessionStorage and navigate to results page
+            sessionStorage.setItem('compatibilityResults', JSON.stringify(result.data))
+            router.push('/results')
 
         } catch (error) {
             console.error("Analysis failed:", error)

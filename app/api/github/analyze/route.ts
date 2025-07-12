@@ -3,8 +3,6 @@ import { githubApi } from '@/lib/githubApi'
 import { GitHubDataProcessor } from '@/lib/githubDataProcessor'
 import { geminiAnalyzer } from '@/lib/geminiApi'
 import { DeveloperAnalysis, ApiResponse } from '@/lib/types'
-import { generateResultId } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'
 import { createLLMPrompt } from '@/lib/prompts'
 
 export async function POST(request: Request) {
@@ -86,8 +84,6 @@ export async function POST(request: Request) {
             prompt: prompt
         }
 
-        // Generate unique ID and store results
-        const resultId = generateResultId()
         const resultsData = {
             userA: analysisA,
             userB: analysisB,
@@ -95,34 +91,9 @@ export async function POST(request: Request) {
             llmExport
         }
 
-        // Store results for shareable links in Supabase
-        try {
-            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
-
-            const { error } = await supabase
-                .from('analysis_results')
-                .insert({
-                    id: resultId,
-                    data: resultsData,
-                    expires_at: expiresAt
-                })
-
-            if (error) {
-                console.error('Failed to store results in Supabase:', error)
-            } else {
-                console.log(`✅ Results stored successfully with ID: ${resultId}`)
-            }
-        } catch (error) {
-            console.error('Failed to store results for sharing:', error)
-            // Continue anyway - the analysis will still work, just won't be shareable
-        }
-
         return NextResponse.json({
             success: true,
-            data: {
-                ...resultsData,
-                resultId
-            }
+            data: resultsData
         } as ApiResponse<any>)
 
     } catch (error: any) {

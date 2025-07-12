@@ -1,200 +1,138 @@
-# GitCompat Database Design
+# GitCompat Architecture Design
 
 ## Overview
 
-The GitCompat database uses a simple, denormalized design with two independent tables for efficient data collection. This approach prioritizes simplicity and performance for basic analytics while keeping the schema easy to understand and maintain.
+GitCompat has been redesigned to operate without a persistent database, focusing on simplicity and privacy. The application now uses client-side storage for temporary data and email-based communication for feedback collection.
 
-## Database Schema
+## Architecture Changes
 
-### Entity Relationship Diagram
+### Previous Architecture (Deprecated)
+- ✗ Supabase database for storing analysis results
+- ✗ Database tables for feedback and contribution signups
+- ✗ Shareable links with persistent storage
 
+### Current Architecture
+- ✅ Client-side sessionStorage for temporary analysis results
+- ✅ Email-based feedback system using Resend
+- ✅ Image export for sharing analysis results
+- ✅ No persistent data storage
+
+## Data Flow
+
+### 1. Analysis Results
 ```
-┌─────────────────┐       ┌─────────────────┐
-│    FEEDBACK     │       │ CONTRIBUTION_   │
-│                 │       │   SIGNUPS       │
-├─────────────────┤       ├─────────────────┤
-│ id (BIGSERIAL)  │       │ id (BIGSERIAL)  │
-│ liked_project   │       │ email (TEXT)    │
-│ helpful_for_devs│       │ time_of_response│
-│ rating (1-5)    │       └─────────────────┘
-│ suggestions     │       
-│ wants_to_       │       
-│   contribute    │       
-│ email (TEXT)    │       
-│ twitter (TEXT)  │       
-│ user_agent      │       
-│ page_url        │       
-│ session_id      │       
-│ created_at      │       
-└─────────────────┘       
-```
-
-## Table Specifications
-
-### 1. Feedback Table
-
-**Purpose**: Store user feedback responses from the feedback form.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | BIGSERIAL | PRIMARY KEY | Unique feedback identifier |
-| `liked_project` | BOOLEAN | - | Whether user liked the project |
-| `helpful_for_devs` | BOOLEAN | - | If project helps developers |
-| `rating` | INTEGER | CHECK (1-5) | Overall rating (1-5 stars) |
-| `suggestions` | TEXT | - | User improvement suggestions |
-| `wants_to_contribute` | BOOLEAN | - | Interest in contributing |
-| `email` | TEXT | - | Optional user email |
-| `twitter` | TEXT | - | Optional user twitter |
-| `user_agent` | TEXT | - | Browser/device information |
-| `page_url` | TEXT | - | Page where feedback was given |
-| `session_id` | TEXT | - | Anonymous session tracking |
-| `created_at` | TIMESTAMP | DEFAULT NOW() | Feedback submission time |
-
-**Indexes**:
-- `idx_feedback_created_at` on `created_at`
-- `idx_feedback_rating` on `rating`
-- `idx_feedback_liked_project` on `liked_project`
-- `idx_feedback_email` on `email`
-
-### 2. Contribution Signups Table
-
-**Purpose**: Simple email collection for contribution notifications.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | BIGSERIAL | PRIMARY KEY | Unique signup identifier |
-| `email` | TEXT | NOT NULL | Required email for notifications |
-| `time_of_response` | TIMESTAMP | DEFAULT NOW() | When signup was submitted |
-
-**Indexes**:
-- `idx_contribution_signups_email` on `email`
-- `idx_contribution_signups_time` on `time_of_response`
-
-## Design Benefits
-
-### 1. **Simplicity**
-- Two independent tables with clear purposes
-- No complex relationships or foreign keys
-- Easy to understand and maintain
-
-### 2. **Performance**
-- Direct data access without joins
-- Minimal indexes for fast queries
-- Efficient for basic analytics needs
-
-### 3. **Flexibility**
-- Anonymous feedback collection supported
-- Optional email collection in feedback
-- Simple email list for contribution notifications
-
-## Analytics Views
-
-### 1. Feedback Analytics
-```sql
-CREATE VIEW feedback_analytics AS
-SELECT 
-  COUNT(*) as total_responses,
-  AVG(rating::float) as average_rating,
-  COUNT(*) FILTER (WHERE liked_project = true) as liked_count,
-  COUNT(*) FILTER (WHERE helpful_for_devs = true) as helpful_count,
-  COUNT(*) FILTER (WHERE wants_to_contribute = true) as contribute_count,
-  COUNT(DISTINCT user_id) as unique_users,
-  DATE_TRUNC('day', created_at) as date
-FROM feedback
-GROUP BY DATE_TRUNC('day', created_at)
-ORDER BY date DESC;
+User submits analysis → 
+GitHub API fetches user data → 
+Gemini AI processes compatibility → 
+Results stored in sessionStorage → 
+User can export as image for sharing
 ```
 
-### 2. Contribution Analytics
-```sql
-CREATE VIEW contribution_analytics AS
-SELECT 
-  COUNT(*) as total_signups,
-  COUNT(DISTINCT email) as unique_emails,
-  DATE_TRUNC('day', time_of_response) as date
-FROM contribution_signups
-GROUP BY DATE_TRUNC('day', time_of_response)
-ORDER BY date DESC;
-```
-
-## Helper Functions
-
-### get_or_create_user()
-```sql
-CREATE OR REPLACE FUNCTION get_or_create_user(
-  p_email TEXT DEFAULT NULL,
-  p_twitter TEXT DEFAULT NULL,
-  p_user_agent TEXT DEFAULT NULL
-) RETURNS UUID
-```
-
-**Purpose**: Efficiently handle user creation/retrieval logic:
-- Finds existing user by email if provided
-- Updates `last_seen_at` for returning users
-- Creates new user record if not found
-- Returns user UUID for foreign key relationships
-
-## Security
-
-### Row Level Security (RLS)
-- **Public INSERT** policies for feedback and signups
-- **Authenticated SELECT** policies for admin access
-- **User privacy** protected through proper access controls
-
-### Data Privacy
-- Email addresses stored securely with unique constraints
-- Optional fields respect user privacy choices
-- Session tracking for analytics without personal identification
-
-## Usage Patterns
-
-### 1. Feedback Submission Flow
+### 2. Feedback Collection
 ```
 User submits feedback → 
-Check for existing user by email → 
-Create/update user record → 
-Insert feedback with user_id reference
+API formats feedback data → 
+Resend sends email to admin → 
+No database storage required
 ```
 
-### 2. Contribution Signup Flow
-```
-User signs up for notifications → 
-Check for existing user by email → 
-Create/update user record → 
-Insert contribution signup with user_id reference
+## Benefits of the New Architecture
+
+### 1. **Privacy First**
+- No persistent storage of user analysis data
+- Results exist only in the user's browser session
+- No tracking or data retention
+
+### 2. **Simplicity**
+- No database management or maintenance
+- Reduced infrastructure complexity
+- Fewer dependencies and potential failure points
+
+### 3. **Cost Efficiency**
+- No database hosting costs
+- Reduced API overhead
+- Simplified deployment
+
+### 4. **Performance**
+- Faster response times (no database queries)
+- Client-side data access
+- Reduced server load
+
+## Data Handling
+
+### Analysis Results
+- **Storage**: Browser sessionStorage only
+- **Lifetime**: Until browser tab is closed or refreshed
+- **Sharing**: Via exported image files
+- **Privacy**: Fully ephemeral, no server-side persistence
+
+### Feedback Data
+- **Collection**: HTML forms
+- **Processing**: Server-side email formatting
+- **Delivery**: Email to administrators
+- **Storage**: None (email-based only)
+
+## Technical Implementation
+
+### Client-Side Storage
+```javascript
+// Store analysis results
+sessionStorage.setItem('compatibilityResults', JSON.stringify(results))
+
+// Retrieve analysis results
+const results = JSON.parse(sessionStorage.getItem('compatibilityResults'))
 ```
 
-### 3. Analytics Queries
+### Email-Based Feedback
+```javascript
+// Send feedback via email API
+const response = await fetch('/api/feedback', {
+  method: 'POST',
+  body: JSON.stringify(feedbackData)
+})
 ```
-Daily feedback metrics → feedback_analytics view
-Contribution signup trends → contribution_analytics view
-User engagement patterns → user_engagement view
+
+### Image Export
+```javascript
+// Export results as image
+const canvas = await html2canvas(element)
+const image = canvas.toDataURL('image/jpeg', 0.9)
 ```
 
-## Performance Considerations
+## Security Considerations
 
-### Indexing Strategy
-- **Primary keys**: Automatic B-tree indexes
-- **Foreign keys**: Indexed for JOIN performance
-- **Filter columns**: Indexed for WHERE clause optimization
-- **Timestamp columns**: Indexed for date-range queries
+### Data Protection
+- No persistent storage reduces data breach risks
+- Client-side data is automatically cleaned on session end
+- Email transmission uses secure HTTPS
 
-### Query Optimization
-- Views pre-aggregate common analytics queries
-- Proper JOIN strategies with indexed foreign keys
-- Efficient date-based partitioning potential for large datasets
+### Privacy Compliance
+- No user data retention
+- No tracking across sessions
+- GDPR-friendly by design (no data to forget)
 
 ## Migration Notes
 
-### From Previous Schema
-If migrating from a denormalized schema:
-1. Create `users` table first
-2. Extract unique email/twitter combinations
-3. Update feedback records with user_id references
-4. Drop redundant email/twitter columns from feedback table
+### From Database Architecture
+1. **Analysis Results**: Now stored client-side only
+2. **Feedback**: Migrated to email-based system
+3. **Sharing**: Changed from URLs to image exports
+4. **Contribution Signups**: Feature removed
 
-### Future Enhancements
-- **User preferences** table for notification settings
-- **Email verification** status tracking
-- **Contribution history** tracking
-- **Analytics events** table for detailed user journey tracking 
+### Future Considerations
+- Consider adding optional user accounts for result history
+- Potential integration with GitHub OAuth for enhanced features
+- Analytics could be added via privacy-focused solutions
+
+## Deployment Simplification
+
+### Removed Requirements
+- Database hosting and management
+- Connection pooling and optimization
+- Backup and recovery procedures
+- Database migrations and schema management
+
+### Current Requirements
+- Email service configuration (Resend)
+- Environment variables for API keys
+- Static file hosting for frontend assets 

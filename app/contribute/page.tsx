@@ -3,8 +3,7 @@
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
-import NotificationModal from "@/components/contribute/NotificationModal"
-import { Wrench, Code, GitBranch, Users } from "lucide-react"
+import { Wrench, Code, GitBranch, Users, ExternalLink } from "lucide-react"
 
 export default function ContributePage() {
     return (
@@ -32,8 +31,8 @@ export default function ContributePage() {
                     </p>
                 </div>
 
-                {/* Work in Progress Card -- activate later*/}
-                {/* <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-2xl p-8 max-w-2xl mx-auto mb-16">
+                {/* Work in Progress Card */}
+                <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-2xl p-8 max-w-2xl mx-auto mb-16">
                     <div className="flex items-center mb-6">
                         <Wrench className="h-6 w-6 text-neutral-300 mr-3" />
                         <h2 className="text-xl font-semibold text-white">Work in <span className="gradient-text">Progress</span></h2>
@@ -56,11 +55,12 @@ export default function ContributePage() {
                                 onClick={() => window.open('/contribute/docs', '_blank')}
                                 className="gradient-button text-white font-medium"
                             >
+                                <ExternalLink className="h-4 w-4 mr-2" />
                                 View Documentation
                             </Button>
                         </div>
                     </div>
-                </div> */}
+                </div>
 
                 {/* Info Cards */}
                 <div className="grid md:grid-cols-2 gap-8">
@@ -83,15 +83,17 @@ export default function ContributePage() {
                     </div>
 
                     <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-xl p-6">
-                        <h3 className="text-xl font-semibold text-white mb-4">Get <span className="gradient-text">Notified</span></h3>
+                        <h3 className="text-xl font-semibold text-white mb-4">Get <span className="gradient-text">Involved</span></h3>
                         <p className="text-neutral-400 text-sm mb-4">
-                            Want to be the first to know when contribution opportunities become available?
+                            Check out our documentation to learn more about the project structure and how to get started.
                         </p>
-                        <NotificationModal>
-                            <Button className="w-full gradient-button text-white font-medium">
-                                Notify Me
-                            </Button>
-                        </NotificationModal>
+                        <Button
+                            onClick={() => window.open('/contribute/docs', '_blank')}
+                            className="w-full gradient-button text-white font-medium"
+                        >
+                            <Code className="h-4 w-4 mr-2" />
+                            Read Documentation
+                        </Button>
                     </div>
                 </div>
             </main>

@@ -4,12 +4,6 @@
  */
 
 interface Config {
-    // Database configuration
-    supabase: {
-        url: string
-        anonKey: string
-    }
-
     // API Keys
     github: {
         token?: string
@@ -44,19 +38,8 @@ interface Config {
  * Validates required environment variables and throws descriptive errors
  */
 function validateConfig(): void {
-    const requiredVars = [
-        { key: 'NEXT_PUBLIC_SUPABASE_URL', value: process.env.NEXT_PUBLIC_SUPABASE_URL },
-        { key: 'NEXT_PUBLIC_SUPABASE_ANON_KEY', value: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY },
-    ]
-
-    const missingVars = requiredVars.filter(({ value }) => !value)
-
-    if (missingVars.length > 0) {
-        throw new Error(
-            `Missing required environment variables: ${missingVars.map(({ key }) => key).join(', ')}\n` +
-            'Please check your .env.local file and ensure all required variables are set.'
-        )
-    }
+    // No required environment variables currently
+    // This function can be expanded when we add required vars
 }
 
 /**
@@ -69,11 +52,6 @@ function createConfig(): Config {
     const nodeEnv = process.env.NODE_ENV || 'development'
 
     return {
-        supabase: {
-            url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        },
-
         github: {
             token: process.env.GITHUB_TOKEN,
         },

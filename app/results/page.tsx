@@ -2,9 +2,9 @@
 
 import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
-import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { DeveloperAnalysis, CompatibilityAnalysis } from "@/lib/types"
+import { AlertCircle } from "lucide-react"
 import {
     LoadingState,
     ErrorState,
@@ -15,6 +15,7 @@ import {
     AnalysisDetails,
     ResultsActions
 } from "@/lib/components/results"
+import ImageGenerator from "@/components/results/ImageGenerator"
 
 interface ResultsData {
     userA: DeveloperAnalysis
@@ -25,25 +26,14 @@ interface ResultsData {
 function ResultsContent() {
     const [results, setResults] = useState<ResultsData | null>(null)
     const [loading, setLoading] = useState(true)
-    const searchParams = useSearchParams()
-    const router = useRouter()
-    const userA = searchParams.get('userA')
-    const userB = searchParams.get('userB')
 
     useEffect(() => {
-        // Check if there are query params indicating this is an old-style results URL
-        if (userA && userB) {
-            // Redirect to analyze page with a message
-            router.push('/analyze')
-            return
-        }
-
         const storedResults = sessionStorage.getItem('compatibilityResults')
         if (storedResults) {
             setResults(JSON.parse(storedResults))
         }
         setLoading(false)
-    }, [userA, userB, router])
+    }, [])
 
     if (loading) {
         return <LoadingState />
@@ -53,8 +43,8 @@ function ResultsContent() {
         return (
             <ErrorState
                 title="No Results Found"
-                description="Please run an analysis first."
-                actionText="Back to Analysis"
+                description="Results are temporary and only available during your current session. Please run a new analysis."
+                actionText="Start New Analysis"
                 actionHref="/analyze"
             />
         )
@@ -64,8 +54,9 @@ function ResultsContent() {
 
     return (
         <ResultsLayout>
-            <ResultsHeader compatibility={compatibility} />
-            
+
+            <ResultsHeader compatibility={compatibility} showShareButtons={true} />
+
             {/* Developer Profiles - First */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <UserProfile analysis={analysisA} title="Developer A" />
@@ -77,7 +68,16 @@ function ResultsContent() {
 
             {/* Detailed Analysis - Third */}
             <AnalysisDetails compatibility={compatibility} />
-            <ResultsActions />
+
+            {/* Image Generation */}
+            <div className="mt-8 flex flex-row justify-center items-center gap-6">
+                <ImageGenerator 
+                    userA={analysisA} 
+                    userB={analysisB} 
+                    compatibility={compatibility} 
+                />
+                <ResultsActions />
+            </div>
         </ResultsLayout>
     )
 }

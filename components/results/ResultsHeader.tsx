@@ -17,9 +17,7 @@ export default function ResultsHeader({ compatibility, showShareButtons = false 
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4 tracking-tight">
                 <span className="gradient-text">Compatibility</span> Results
             </h1>
-            <p className="text-neutral-400 text-lg">
-                Analysis for {compatibility.developerA} and {compatibility.developerB}
-            </p>
+            
 
             {/* Share Buttons */}
             {showShareButtons && <ShareButtons compatibility={compatibility} />}

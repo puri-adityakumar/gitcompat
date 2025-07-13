@@ -3,8 +3,6 @@ import { githubApi } from '@/lib/githubApi'
 import { GitHubDataProcessor } from '@/lib/githubDataProcessor'
 import { geminiAnalyzer } from '@/lib/geminiApi'
 import { DeveloperAnalysis, ApiResponse } from '@/lib/types'
-import { generateResultId } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'
 import { createLLMPrompt } from '@/lib/prompts'
 
 export async function POST(request: Request) {
@@ -55,12 +53,12 @@ export async function POST(request: Request) {
             workStyleAlignment: llmResult.work_style_compatibility.score,
             collaborationReadiness: llmResult.collaboration_compatibility.score,
             strengths: llmResult.strengths,
-            challenges: llmResult.potential_challenges,
+            challenges: llmResult.challenges,
             recommendations: [
                 ...llmResult.next_steps,
-                `Recommended project types: ${llmResult.recommended_collaboration_approach.project_types.join(', ')}`,
-                `Optimal schedule: ${llmResult.recommended_collaboration_approach.optimal_schedule}`,
-                `Communication method: ${llmResult.recommended_collaboration_approach.communication_method}`
+                `Recommended project types: ${llmResult.recommended_approach.project_types.join(', ')}`,
+                `Optimal schedule: ${llmResult.recommended_approach.optimal_schedule}`,
+                `Communication method: ${llmResult.recommended_approach.communication_method}`
             ],
             analysisDate: new Date().toISOString(),
             developerA: userA,
@@ -69,11 +67,12 @@ export async function POST(request: Request) {
             // Additional AI insights
             aiInsights: {
                 matchCategory: llmResult.match_category,
+                overallCompatibility: llmResult.overall_compatibility,
                 technicalDetails: llmResult.technical_compatibility,
                 collaborationDetails: llmResult.collaboration_compatibility,
                 workStyleDetails: llmResult.work_style_compatibility,
                 successPrediction: llmResult.success_prediction,
-                recommendedApproach: llmResult.recommended_collaboration_approach,
+                recommendedApproach: llmResult.recommended_approach,
                 customFocusInsights: llmResult.custom_focus_insights || null
             }
         }
@@ -86,8 +85,6 @@ export async function POST(request: Request) {
             prompt: prompt
         }
 
-        // Generate unique ID and store results
-        const resultId = generateResultId()
         const resultsData = {
             userA: analysisA,
             userB: analysisB,
@@ -95,34 +92,9 @@ export async function POST(request: Request) {
             llmExport
         }
 
-        // Store results for shareable links in Supabase
-        try {
-            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
-
-            const { error } = await supabase
-                .from('analysis_results')
-                .insert({
-                    id: resultId,
-                    data: resultsData,
-                    expires_at: expiresAt
-                })
-
-            if (error) {
-                console.error('Failed to store results in Supabase:', error)
-            } else {
-                console.log(`✅ Results stored successfully with ID: ${resultId}`)
-            }
-        } catch (error) {
-            console.error('Failed to store results for sharing:', error)
-            // Continue anyway - the analysis will still work, just won't be shareable
-        }
-
         return NextResponse.json({
             success: true,
-            data: {
-                ...resultsData,
-                resultId
-            }
+            data: resultsData
         } as ApiResponse<any>)
 
     } catch (error: any) {

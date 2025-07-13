@@ -76,6 +76,11 @@ export interface CompatibilityAnalysis {
     customPrompt?: string | null
     aiInsights?: {
         matchCategory: string
+        overallCompatibility?: {
+            verdict: string
+            summary: string
+            key_factors: string[]
+        }
         technicalDetails: any
         collaborationDetails: any
         workStyleDetails: any

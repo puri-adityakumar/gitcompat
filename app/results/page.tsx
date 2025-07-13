@@ -15,6 +15,7 @@ import {
     AnalysisDetails,
     ResultsActions
 } from "@/lib/components/results"
+import ImageGenerator from "@/components/results/ImageGenerator"
 
 interface ResultsData {
     userA: DeveloperAnalysis
@@ -55,7 +56,7 @@ function ResultsContent() {
         <ResultsLayout>
 
             <ResultsHeader compatibility={compatibility} showShareButtons={true} />
-            
+
             {/* Developer Profiles - First */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <UserProfile analysis={analysisA} title="Developer A" />
@@ -67,7 +68,16 @@ function ResultsContent() {
 
             {/* Detailed Analysis - Third */}
             <AnalysisDetails compatibility={compatibility} />
-            <ResultsActions />
+
+            {/* Image Generation */}
+            <div className="mt-8 flex flex-row justify-center items-center gap-6">
+                <ImageGenerator 
+                    userA={analysisA} 
+                    userB={analysisB} 
+                    compatibility={compatibility} 
+                />
+                <ResultsActions />
+            </div>
         </ResultsLayout>
     )
 }

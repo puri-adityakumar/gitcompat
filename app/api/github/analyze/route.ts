@@ -53,12 +53,12 @@ export async function POST(request: Request) {
             workStyleAlignment: llmResult.work_style_compatibility.score,
             collaborationReadiness: llmResult.collaboration_compatibility.score,
             strengths: llmResult.strengths,
-            challenges: llmResult.potential_challenges,
+            challenges: llmResult.challenges,
             recommendations: [
                 ...llmResult.next_steps,
-                `Recommended project types: ${llmResult.recommended_collaboration_approach.project_types.join(', ')}`,
-                `Optimal schedule: ${llmResult.recommended_collaboration_approach.optimal_schedule}`,
-                `Communication method: ${llmResult.recommended_collaboration_approach.communication_method}`
+                `Recommended project types: ${llmResult.recommended_approach.project_types.join(', ')}`,
+                `Optimal schedule: ${llmResult.recommended_approach.optimal_schedule}`,
+                `Communication method: ${llmResult.recommended_approach.communication_method}`
             ],
             analysisDate: new Date().toISOString(),
             developerA: userA,
@@ -67,11 +67,12 @@ export async function POST(request: Request) {
             // Additional AI insights
             aiInsights: {
                 matchCategory: llmResult.match_category,
+                overallCompatibility: llmResult.overall_compatibility,
                 technicalDetails: llmResult.technical_compatibility,
                 collaborationDetails: llmResult.collaboration_compatibility,
                 workStyleDetails: llmResult.work_style_compatibility,
                 successPrediction: llmResult.success_prediction,
-                recommendedApproach: llmResult.recommended_collaboration_approach,
+                recommendedApproach: llmResult.recommended_approach,
                 customFocusInsights: llmResult.custom_focus_insights || null
             }
         }

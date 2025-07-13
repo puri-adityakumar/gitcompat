@@ -10,6 +10,11 @@ if (!hasApiKey.gemini()) {
 interface LLMCompatibilityResult {
     compatibility_score: number
     match_category: 'excellent' | 'good' | 'moderate' | 'poor'
+    overall_compatibility: {
+        verdict: string
+        summary: string
+        key_factors: string[]
+    }
     technical_compatibility: {
         score: number
         language_overlap: 'high' | 'medium' | 'low'
@@ -32,8 +37,8 @@ interface LLMCompatibilityResult {
         maintenance_style_match: 'compatible' | 'somewhat' | 'incompatible'
     }
     strengths: string[]
-    potential_challenges: string[]
-    recommended_collaboration_approach: {
+    challenges: string[]
+    recommended_approach: {
         project_types: string[]
         session_structure: string
         communication_method: string
@@ -173,12 +178,13 @@ export class GeminiCompatibilityAnalyzer {
         const requiredFields = [
             'compatibility_score',
             'match_category',
+            'overall_compatibility',
             'technical_compatibility',
             'collaboration_compatibility',
             'work_style_compatibility',
             'strengths',
-            'potential_challenges',
-            'recommended_collaboration_approach',
+            'challenges',
+            'recommended_approach',
             'success_prediction',
             'next_steps'
         ]

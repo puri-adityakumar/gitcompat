@@ -47,17 +47,10 @@ export default function ContributePage() {
                             <div className="w-16 h-16 gradient-button rounded-lg flex items-center justify-center mx-auto mb-4">
                                 <Code className="h-8 w-8 text-white" />
                             </div>
-                            <h3 className="text-lg font-medium text-white mb-2">Documentation Available</h3>
+                            <h3 className="text-lg font-medium text-white mb-2">Coming Soon</h3>
                             <p className="text-neutral-400 text-sm mb-4">
-                                Get started with our contribution guides and project documentation
+                                We're working on comprehensive contribution guidelines and documentation
                             </p>
-                            <Button
-                                onClick={() => window.open('/contribute/docs', '_blank')}
-                                className="gradient-button text-white font-medium"
-                            >
-                                <ExternalLink className="h-4 w-4 mr-2" />
-                                View Documentation
-                            </Button>
                         </div>
                     </div>
                 </div>
@@ -85,14 +78,14 @@ export default function ContributePage() {
                     <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-xl p-6">
                         <h3 className="text-xl font-semibold text-white mb-4">Get <span className="gradient-text">Involved</span></h3>
                         <p className="text-neutral-400 text-sm mb-4">
-                            Check out our documentation to learn more about the project structure and how to get started.
+                            Join our community to help improve GitCompat and connect with other developers.
                         </p>
                         <Button
-                            onClick={() => window.open('/contribute/docs', '_blank')}
+                            onClick={() => window.open('https://github.com/puri-adityakumar/gitcompat', '_blank')}
                             className="w-full gradient-button text-white font-medium"
                         >
                             <Code className="h-4 w-4 mr-2" />
-                            Read Documentation
+                            View on GitHub
                         </Button>
                     </div>
                 </div>

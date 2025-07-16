@@ -13,14 +13,14 @@ export default function UserProfile({ analysis, title }: UserProfileProps) {
     return (
         <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-xl p-6">
             <div className="flex items-center mb-6">
-                <Avatar className="h-12 w-12 mr-4 border border-neutral-700">
+                <Avatar className="h-16 w-16 mr-4 border border-neutral-700">
                     <AvatarImage src={analysis.profile.avatarUrl} alt={analysis.profile.username} />
                     <AvatarFallback className="bg-neutral-800 text-neutral-300">
                         {analysis.profile.username.charAt(0).toUpperCase()}
                     </AvatarFallback>
                 </Avatar>
                 <div>
-                    <h3 className="text-lg font-semibold text-white">{title}</h3>
+                    <h3 className="text-xl font-semibold text-white">{title}</h3>
                     <p className="text-neutral-400 text-sm">@{analysis.profile.username}</p>
                 </div>
             </div>
@@ -73,7 +73,11 @@ export default function UserProfile({ analysis, title }: UserProfileProps) {
                         </div>
                         <div className="w-full bg-neutral-800 rounded-full h-2">
                             <div
-                                className={`h-2 rounded-full ${getScoreBg(analysis.activityScore)} ${getScoreColor(analysis.activityScore).replace('text-', 'bg-').replace('-400', '-500')}`}
+                                className={`h-2 rounded-full transition-all duration-500 ${
+                                    analysis.activityScore >= 80 ? 'bg-green-500' :
+                                    analysis.activityScore >= 60 ? 'bg-yellow-500' :
+                                    'bg-red-500'
+                                }`}
                                 style={{ width: `${analysis.activityScore}%` }}
                             ></div>
                         </div>
@@ -88,7 +92,11 @@ export default function UserProfile({ analysis, title }: UserProfileProps) {
                         </div>
                         <div className="w-full bg-neutral-800 rounded-full h-2">
                             <div
-                                className={`h-2 rounded-full ${getScoreBg(analysis.collaborationScore)} ${getScoreColor(analysis.collaborationScore).replace('text-', 'bg-').replace('-400', '-500')}`}
+                                className={`h-2 rounded-full transition-all duration-500 ${
+                                    analysis.collaborationScore >= 80 ? 'bg-green-500' :
+                                    analysis.collaborationScore >= 60 ? 'bg-yellow-500' :
+                                    'bg-red-500'
+                                }`}
                                 style={{ width: `${analysis.collaborationScore}%` }}
                             ></div>
                         </div>
@@ -103,7 +111,11 @@ export default function UserProfile({ analysis, title }: UserProfileProps) {
                         </div>
                         <div className="w-full bg-neutral-800 rounded-full h-2">
                             <div
-                                className={`h-2 rounded-full ${getScoreBg(analysis.codeQualityScore)} ${getScoreColor(analysis.codeQualityScore).replace('text-', 'bg-').replace('-400', '-500')}`}
+                                className={`h-2 rounded-full transition-all duration-500 ${
+                                    analysis.codeQualityScore >= 80 ? 'bg-green-500' :
+                                    analysis.codeQualityScore >= 60 ? 'bg-yellow-500' :
+                                    'bg-red-500'
+                                }`}
                                 style={{ width: `${analysis.codeQualityScore}%` }}
                             ></div>
                         </div>

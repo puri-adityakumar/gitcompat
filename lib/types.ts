@@ -76,6 +76,11 @@ export interface CompatibilityAnalysis {
     customPrompt?: string | null
     aiInsights?: {
         matchCategory: string
+        overallCompatibility?: {
+            verdict: string
+            summary: string
+            key_factors: string[]
+        }
         technicalDetails: any
         collaborationDetails: any
         workStyleDetails: any
@@ -106,4 +111,45 @@ export interface GitHubApiError {
 export interface AnalysisRequest {
     userA: string
     userB: string
+}
+
+export interface ProcessedDeveloper {
+    username: string;
+    profile: {
+        name: string;
+        bio: string;
+        location: string;
+        experience_years: number;
+        public_repos: number;
+        followers: number;
+        following: number;
+        has_contact_info: boolean;
+        company: string | null;
+    };
+    technical_profile: {
+        primary_languages: Record<string, string>;
+        technology_stack: string[];
+        project_complexity: string;
+        total_stars_received: number;
+        average_repo_size: number;
+        most_used_topics: string[];
+    };
+    activity_patterns: {
+        commit_frequency: string;
+        preferred_coding_hours: string;
+        consistency_score: number;
+        recent_activity_level: string;
+        last_commit_days_ago: number;
+        timezone_pattern: string;
+        weekday_preference: string;
+        monthly_activity_trend: string;
+    };
+    collaboration_style: {
+        total_pull_requests: number;
+        average_contributors_per_project: number;
+        prefers_solo_vs_team: string;
+        project_maintenance: string;
+        community_engagement: string;
+        fork_to_star_ratio: number;
+    };
 } 

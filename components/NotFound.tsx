@@ -3,13 +3,14 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { env } from "@/lib/config"
 
 export default function NotFound() {
     const router = useRouter()
 
     useEffect(() => {
         // Only redirect in production environment
-        if (process.env.NODE_ENV === 'production') {
+        if (env.isProduction()) {
             const timer = setTimeout(() => {
                 router.push("/")
             }, 7000)

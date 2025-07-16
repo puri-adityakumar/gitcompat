@@ -1,4 +1,4 @@
-import { Github, Brain, BarChart3, Rocket, Sparkles, Database } from "lucide-react"
+import { Github, Brain, BarChart3, Rocket, Sparkles } from "lucide-react"
 
 export default function HowItWorks() {
     const steps = [
@@ -37,7 +37,7 @@ export default function HowItWorks() {
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
                     <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-neutral-900 text-neutral-300 border border-neutral-800 mb-6">
-                        <Database className="w-4 h-4 mr-2 text-green-400" />
+                        <BarChart3 className="w-4 h-4 mr-2 text-green-400" />
                         Technical Process
                     </div>
                     <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 tracking-tight">

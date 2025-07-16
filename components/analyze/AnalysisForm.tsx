@@ -111,14 +111,9 @@ export default function AnalysisForm({ userA, userB, onUserAChange, onUserBChang
                 return
             }
 
-            // Navigate to dynamic results page with unique ID
-            if (result.data.resultId) {
-                router.push(`/results/${result.data.resultId}`)
-            } else {
-                // Fallback: store in sessionStorage and use old route
-                sessionStorage.setItem('compatibilityResults', JSON.stringify(result.data))
-                router.push(`/results?userA=${encodeURIComponent(userA.trim())}&userB=${encodeURIComponent(userB.trim())}`)
-            }
+            // Store results in sessionStorage and navigate to results page
+            sessionStorage.setItem('compatibilityResults', JSON.stringify(result.data))
+            router.push('/results')
 
         } catch (error) {
             console.error("Analysis failed:", error)
@@ -151,7 +146,7 @@ export default function AnalysisForm({ userA, userB, onUserAChange, onUserBChang
         {
             title: "Backend × Mobile Development",
             description: "Analyzing compatibility for API development and mobile app integration",
-            prompt: "Evaluate their compatibility for mobile application development, focusing on backend API design, mobile-first thinking, and cross-platform development potential. Consider their experience with REST APIs, database design, and mobile optimization patterns."
+            prompt: "Evaluate their compatibility for mobile application development, focusing on backend API design, mobile-first thinking, and cross-platform development potential. Consider their experience with REST APIs and mobile optimization patterns."
         },
         {
             title: "Coding Crush - Tech Dating",

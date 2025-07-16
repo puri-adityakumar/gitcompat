@@ -2,233 +2,212 @@
 
 This document outlines the complete logic, rules, algorithms, and prompts used in GitCompat for analyzing developer compatibility.
 
-## Overview
-
-GitCompat analyzes GitHub profiles to determine pair programming compatibility between two developers. The analysis combines traditional scoring algorithms with AI-powered insights to provide comprehensive compatibility assessments.
+**Implementation Files:**
+- `@/lib/githubApi.ts` - GitHub API integration and data collection
+- `@/lib/githubDataProcessor.ts` - Data processing and analysis algorithms
+- `@/lib/prompts.ts` - LLM prompt generation and formatting
+- `@/lib/geminiApi.ts` - AI analysis using Google Gemini API
+- `@/lib/types.ts` - TypeScript type definitions
 
 ## Data Collection Categories
 
+**Reference: `@/lib/githubApi.ts` - `GitHubApiService` class**
+
 | Category | Data Points | Description |
 |----------|-------------|-------------|
-| **Profile** | Username, Name, Bio, Location | Basic user information |
+| **Profile** | Username, Name, Bio, Location | Basic user information (`GitHubProfile` interface) |
 | | Public Repos, Followers, Following | Social & activity metrics |
-| | Created At, Company, Email | Additional profile data |
-| **Repository** | Name, Description, Language | Basic repository info |
-| | Stars, Forks, Topics | Repository engagement metrics |
-| | Size, Is Private, Updated At | Repository metadata |
-| | Commits (last 50 per repo) | Recent commit history |
-| **Languages** | Name, Bytes, Percentage | Language usage statistics |
-| **Activity** | Last Commit Date | Most recent contribution |
-| | Commit Frequency | Activity level classification |
-| | Preferred Hours | Peak coding hours (0-23) |
-| | Timezone Pattern | Day/Night/Mixed activity |
-| | Activity Consistency | Regular contribution pattern |
+| | Created At, Company, Email, Avatar | Profile metadata |
+| **Repository** | Name, Description, Language | Basic repository info (`RepositoryData` interface) |
+| | Stars, Forks, Topics, Size | Repository metrics |
+| | Updated At, Is Private | Repository metadata |
+| | Last 50 commits per repo | Recent commit history (`CommitData` interface) |
+| **Languages** | Name, Bytes, Percentage | Language usage statistics (`LanguageStats` interface) |
+| **Activity** | Commit Timing, Frequency | Activity patterns (`ActivityPattern` interface) |
+| | Preferred Hours (0-23) | Peak coding hours |
+| | Timezone Pattern | Day/Night/Mixed activity classification |
+| | Consistency Score (0-100) | Activity regularity |
+| | Monthly Activity Trend | Activity pattern over time |
 
-## Scoring Algorithms
+## Data Processing Pipeline
 
-### 1. Activity Score (0-100 points)
+**Reference: `@/lib/githubDataProcessor.ts` - `GitHubDataProcessor` class**
 
-**Base Score Components (0-70 points):**
-- **Commit Score**: `Math.min(commits / 100 * 35, 35)` (Max 35 points)
-- **Repository Activity Score**: `(activeRepos / totalRepos) * 20` (Max 20 points)
-- **Consistency Score**: `totalRepos > 5 ? 15 : (totalRepos / 5) * 15` (Max 15 points)
+### 1. Data Collection (`@/lib/githubApi.ts`)
 
-**Activity Pattern Bonuses (0-30 points):**
-- **Recency Bonus**: Up to 10 points based on last commit date
-  - ≤ 1 day: 10 points
-  - ≤ 7 days: 8 points
-  - ≤ 30 days: 5 points
-  - ≤ 90 days: 2 points
-  - > 90 days: 0 points
-- **Frequency Bonus**: Up to 10 points based on commit frequency
-  - Very High: 10 points
-  - High: 8 points
-  - Moderate: 6 points
-  - Low: 3 points
-  - Very Low: 0 points
-- **Consistency Bonus**: `activityConsistency * 0.1` (Max 10 points)
-
-**Additional Bonuses:**
-- **Message Quality Bonus**: 5 points if commit messages > 20 characters
-- **Regular Hours Bonus**: 3 points for day-time timezone pattern
-
-### 2. Collaboration Score (0-100 points)
-
-- **Pull Request Score**: `Math.min(prs / 10 * 40, 40)` (Max 40 points)
-- **Contributor Score**: `contributors > repos ? 40 : (contributors / repos) * 40` (Max 40 points)
-- **Diversity Score**: `repos > 3 ? 20 : (repos / 3) * 20` (Max 20 points)
-
-### 3. Code Quality Score (0-100 points)
-
-- **Star Score**: `(total_stars / repos) * 2` (Max varies)
-- **Fork Score**: `(total_forks / repos) * 2` (Max varies)
-- **Description Score**: `(repos_with_description / total_repos) * 20` (Max 20 points)
-- **Topic Score**: `(repos_with_topics / total_repos) * 20` (Max 20 points)
-- **Profile Score**: Bio (10) + Location (5) + Company (5) (Max 20 points)
-
-## Activity Pattern Classification
-
-### Commit Frequency
-```
-Commits per Week  | Classification
-------------------|---------------
-≥ 10             | Very High
-≥ 5              | High
-≥ 2              | Moderate
-≥ 0.5            | Low
-< 0.5            | Very Low
+```typescript
+// Main analysis method
+async analyzeUser(username: string): Promise<DeveloperAnalysis & { activityPattern: ActivityPattern }>
 ```
 
-### Timezone Pattern
-```
-Hours            | Classification
------------------|---------------
-9 AM - 6 PM     | Day-time
-10 PM - 6 AM    | Night-time
-Mixed Hours      | Mixed
-No Clear Pattern | Unknown
-```
+**Process:**
+1. Fetch user profile via GitHub API
+2. Fetch user repositories (up to 10 most recent)
+3. For each repository:
+   - Fetch language statistics
+   - Fetch commit history (last 50 commits)
+   - Fetch pull requests
+   - Fetch contributors
+   - Collect repository metadata
 
-### Project Complexity Assessment
-- **Advanced**: (avgStars > 50 AND avgSize > 5000) OR has advanced topics
-- **Intermediate**: avgStars > 10 AND avgSize > 1000
-- **Beginner-Intermediate**: Default classification
+### 2. Activity Pattern Analysis (`@/lib/githubApi.ts`)
 
-Advanced topics include: machine-learning, ai, blockchain, microservices, distributed-systems
-
-## LLM Prompt Template
-
-The system sends a comprehensive prompt to the AI that includes:
-
-### Developer Profile Structure
-For each developer (A and B), the prompt includes:
-
-**Profile Information:**
-- Name, Bio, Location
-- GitHub Experience (years)
-- Public Repositories count
-- Network (followers, following)
-- Contact availability
-- Company affiliation
-
-**Technical Profile:**
-- Primary Languages (top 3 with percentages)
-- Technology Stack (languages + topics)
-- Project Complexity level
-- Community Recognition (total stars)
-- Average Project Size
-- Most Used Topics
-
-**Activity Patterns:**
-- Commit Frequency classification
-- Preferred Coding Hours
-- Consistency Score (0-100)
-- Recent Activity Level
-- Days since last commit
-- Timezone Pattern
-- Work Schedule preference
-- Activity Trend (increasing/decreasing/stable)
-
-**Collaboration Style:**
-- Total Pull Requests estimate
-- Average Contributors per Project
-- Solo vs Team preference
-- Project Maintenance quality
-- Community Engagement level
-- Fork/Star ratio
-
-### Expected AI Response Format
-
-The AI must respond with a JSON structure containing:
-
-```json
-{
-  "compatibility_score": "number 0-100",
-  "match_category": "excellent|good|moderate|poor",
-  "technical_compatibility": {
-    "score": "number 0-100",
-    "language_overlap": "high|medium|low",
-    "complementary_skills": ["skill1", "skill2"],
-    "learning_opportunities": {
-      "user_a_learns": ["skill1", "skill2"],
-      "user_b_learns": ["skill1", "skill2"]
-    }
-  },
-  "collaboration_compatibility": {
-    "score": "number 0-100",
-    "work_schedule_match": "excellent|good|challenging",
-    "communication_feasibility": "high|medium|low",
-    "project_approach_alignment": "similar|complementary|conflicting"
-  },
-  "work_style_compatibility": {
-    "score": "number 0-100",
-    "activity_level_match": "excellent|good|poor",
-    "consistency_alignment": "high|medium|low",
-    "maintenance_style_match": "compatible|somewhat|incompatible"
-  },
-  "strengths": ["Specific strength 1", "Specific strength 2"],
-  "potential_challenges": ["Challenge 1 with mitigation strategy"],
-  "recommended_collaboration_approach": {
-    "project_types": ["type1", "type2"],
-    "session_structure": "suggested approach",
-    "communication_method": "recommended method",
-    "optimal_schedule": "best time to collaborate"
-  },
-  "success_prediction": {
-    "short_term": "high|medium|low - reason",
-    "long_term": "high|medium|low - reason"
-  },
-  "next_steps": ["Immediate action 1", "Immediate action 2"]
+```typescript
+interface ActivityPattern {
+    lastCommitDate: string | null
+    daysSinceLastCommit: number
+    commitFrequency: 'very-high' | 'high' | 'moderate' | 'low' | 'very-low'
+    preferredHours: number[]
+    weekdayActivity: number
+    timezonePattern: 'day-time' | 'night-time' | 'mixed' | 'unknown'
+    activityConsistency: number
+    monthlyCommits: { month: string, count: number }[]
+    averageCommitHour: number
+    commitMessageLength: number
+    hasRecentActivity: boolean
 }
 ```
 
-## Analysis Criteria for AI
+**Classifications:**
+- **Commit Frequency**: Based on commits per week analysis
+- **Timezone Pattern**: 
+  - Day-time: 9 AM - 6 PM
+  - Night-time: 10 PM - 6 AM  
+  - Mixed: No clear pattern
+- **Activity Consistency**: 0-100 score based on regularity
 
-The AI considers the following factors when generating compatibility scores:
+### 3. Data Processing for LLM (`@/lib/githubDataProcessor.ts`)
 
-1. **Technical Compatibility**
-   - Both complementary skills (different but useful) and overlapping skills (common ground)
-   - Programming language overlap and complementarity
-   - Technology stack alignment
-   - Learning opportunities for both developers
+```typescript
+static processForLLM(
+    analysisA: DeveloperAnalysis & { activityPattern: ActivityPattern },
+    analysisB: DeveloperAnalysis & { activityPattern: ActivityPattern }
+): { userA: ProcessedDeveloper; userB: ProcessedDeveloper }
+```
 
-2. **Schedule & Communication**
-   - Time zones, activity patterns, and communication availability
-   - Work schedule compatibility
-   - Preferred coding hours alignment
+**Transforms raw data into structured format:**
+- **Profile Processing**: Experience calculation, contact info detection
+- **Technical Analysis**: Language prioritization, technology stack identification
+- **Activity Processing**: Pattern analysis, trend calculation
+- **Collaboration Analysis**: PR estimation, team vs solo preference detection
 
-3. **Experience & Growth**
-   - Project complexity compatibility and experience levels
-   - Learning potential for both developers
-   - Skill development opportunities
+## LLM Prompt Generation
 
-4. **Collaboration Style**
-   - Solo vs team preferences
-   - Project maintenance approaches
-   - Community engagement levels
-   - Pull request and collaboration experience
+**Reference: `@/lib/prompts.ts` - `createLLMPrompt()` function**
 
-5. **Potential Conflicts**
-   - Activity level mismatches
-   - Different work style preferences
-   - Communication challenges
-   - Availability and commitment concerns
+### Prompt Structure
 
-## Compatibility Score Calculation
+The system generates comprehensive prompts including:
 
-The final compatibility score is a weighted average of:
-- **Technical Compatibility (35%)**: Language & topic overlap
-- **Work Style Alignment (25%)**: Activity patterns & code quality
-- **Collaboration Readiness (25%)**: PR activity & team experience
-- **Timing Compatibility (15%)**: Timezone & schedule alignment
+**For Each Developer:**
+- **Profile Information**: Name, bio, location, experience years, repository count
+- **Technical Profile**: Primary languages, technology stack, project complexity
+- **Activity Patterns**: Commit frequency, preferred hours, consistency score
+- **Collaboration Style**: PR activity, team vs solo preference, community engagement
 
-## Fallback Mechanism
+### Expected AI Response Format
 
-If AI analysis fails, the system provides a fallback response with:
-- 50% compatibility score
-- "Moderate" match category
-- Generic recommendations
-- Manual review suggestions
-- Error details for debugging
+**Reference: `@/lib/geminiApi.ts` - `LLMCompatibilityResult` interface**
 
-This ensures the system remains functional even when external AI services are unavailable. 
+```typescript
+interface LLMCompatibilityResult {
+    compatibility_score: number
+    match_category: 'excellent' | 'good' | 'moderate' | 'poor'
+    overall_compatibility: {
+        verdict: string
+        summary: string
+        key_factors: string[]
+    }
+    technical_compatibility: {
+        score: number
+        language_overlap: 'high' | 'medium' | 'low'
+        complementary_skills: string[]
+        learning_opportunities: {
+            user_a_learns: string[]
+            user_b_learns: string[]
+        }
+    }
+    collaboration_compatibility: {
+        score: number
+        work_schedule_match: 'excellent' | 'good' | 'challenging'
+        communication_feasibility: 'high' | 'medium' | 'low'
+        project_approach_alignment: 'similar' | 'complementary' | 'conflicting'
+    }
+    work_style_compatibility: {
+        score: number
+        activity_level_match: 'excellent' | 'good' | 'poor'
+        consistency_alignment: 'high' | 'medium' | 'low'
+        maintenance_style_match: 'compatible' | 'somewhat' | 'incompatible'
+    }
+    strengths: string[]
+    challenges: string[]
+    recommended_approach: {
+        project_types: string[]
+        session_structure: string
+        communication_method: string
+        optimal_schedule: string
+    }
+    success_prediction: {
+        short_term: string
+        long_term: string
+    }
+    next_steps: string[]
+}
+```
+
+## AI Analysis Implementation
+
+**Reference: `@/lib/geminiApi.ts` - `GeminiCompatibilityAnalyzer` class**
+
+### Configuration
+- **Model**: `gemini-2.0-flash`
+- **Temperature**: 0.7 (balanced creativity/consistency)
+- **Max Tokens**: 2048
+- **Response Format**: JSON with fallback parsing
+
+### Analysis Process
+1. **Input Validation**: Ensure API key availability
+2. **Request Generation**: Format prompt with developer data
+3. **AI Processing**: Send to Gemini API with retry logic
+4. **Response Parsing**: Extract JSON with fallback handling
+5. **Error Handling**: Graceful degradation with fallback responses
+
+## Data Structure Processing
+
+**Reference: `@/lib/githubDataProcessor.ts` - Helper methods**
+
+### Technical Profile Generation
+```typescript
+private static getTechnologyStack(repositories: RepositoryData[]): string[]
+private static getProjectComplexity(repositories: RepositoryData[]): string
+private static getPrimaryLanguages(languages: LanguageStats[]): Record<string, string>
+```
+
+### Activity Analysis
+```typescript
+private static getRecentActivityLevel(pattern: ActivityPattern): string
+private static getMonthlyTrend(commits: { month: string, count: number }[]): string
+private static getPreferredCodingHours(pattern: ActivityPattern): string
+```
+
+### Collaboration Assessment
+```typescript
+private static analyzeSoloVsTeam(repositories: RepositoryData[]): string
+private static getProjectMaintenance(repositories: RepositoryData[]): string
+private static getCommunityEngagement(profile: GitHubProfile, repositories: RepositoryData[]): string
+```
+
+## Error Handling & Fallbacks
+
+**Reference: `@/lib/githubApi.ts` - Error handling methods**
+
+### GitHub API Error Handling
+- **Rate Limiting**: Automatic retry with exponential backoff
+- **User Not Found**: Graceful error messages
+- **Private Repositories**: Access denied handling
+- **Network Issues**: Timeout and retry logic
+
+### AI Analysis Fallbacks
+- **API Failure**: Default compatibility analysis
+- **Invalid Response**: Fallback scoring system
+- **Parsing Errors**: Graceful degradation

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Work_Sans, Epilogue } from "next/font/google";
 import { Analytics } from '@vercel/analytics/react';
-import FeedbackToggle from "@/components/feedback/FeedbackToggle";
+import { config } from "@/lib/config";
 import "./globals.css";
 
 const workSans = Work_Sans({
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: process.env.GOOGLE_SITE_VERIFICATION,
+    google: config.site.verification?.google,
   },
 };
 
@@ -71,7 +71,6 @@ export default function RootLayout({
         className={`${workSans.variable} ${epilogue.variable} antialiased font-sans`}
       >
         {children}
-        <FeedbackToggle />
         <Analytics />
       </body>
     </html>

@@ -45,3 +45,8 @@ next-env.d.ts
 
 #git
 .gitignore
+
+
+todo.md
+# Sentry Config File
+.env.sentry-build-plugin

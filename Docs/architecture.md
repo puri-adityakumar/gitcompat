@@ -40,6 +40,30 @@
 - **GitHub API**: Profile, repository, commit, and language data collection
 - **Google Gemini API**: AI-powered compatibility analysis and insights
 
+## Rate Limiting & API Management
+
+### GitHub API Rate Limits
+- **Without Personal Access Token**: 60 requests per hour
+- **With Personal Access Token**: 5000 requests per hour
+
+### Implementation (`@/lib/githubApi.ts`)
+
+**Rate Limit Detection:**
+- Monitors `x-ratelimit-remaining` and `x-ratelimit-reset` headers
+- Calculates wait time and displays user-friendly error messages
+- Adds 10-minute buffer to reset time estimates
+
+**Request Optimization:**
+- Parallel API calls for both users (`Promise.all`)
+- Limits to 10 most recent repositories per user
+- Fetches last 50 commits per repository only
+- 100ms delay between repository processing requests
+
+**Token Management:**
+- Optional GitHub Personal Access Token from environment
+- Automatic token detection and header inclusion
+- 83x rate limit increase with token (60 → 5000 requests/hour)
+
 ## Project Structure
 
 ```

@@ -2,35 +2,35 @@
 
 <div align="center">
 
-🤝 **AI-Powered GitHub Developer Compatibility Analysis**
+![GitCompat Banner](/public/banner.png)
+
+**AI-Powered GitHub Developer Compatibility Analysis**
 
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![Google Gemini](https://img.shields.io/badge/Google-Gemini-4285F4?style=flat-square&logo=google)](https://ai.google.dev/)
 
 </div>
 
-## 🚀 What is GitCompat?
+## What is GitCompat?
 
-GitCompat analyzes GitHub profiles to find developers who would work well together. Using AI-powered insights, it evaluates:
+GitCompat is an AI-powered tool that analyzes two GitHub profiles to determine their pair programming compatibility. Perfect for hackathons and team formation, it evaluates technical skills, work patterns, and collaboration readiness using algorithmic scoring and AI insights.
 
-- **Technical Compatibility** - Programming languages, project types, code quality
-- **Work Style Alignment** - Commit patterns, activity schedules, collaboration habits  
-- **Collaboration Readiness** - PR activity, team experience, communication patterns
-
-## ⚡ Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+ 
 - GitHub account
 - (Optional) GitHub Personal Access Token for higher rate limits
+- Gemini API 
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/gitcompat.git
+git clone https://github.com/puri-adityakumar/gitcompat
 cd gitcompat
 
 # Install dependencies
@@ -45,38 +45,30 @@ npm run dev
 ```
 
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Framework**: Next.js 15 
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS + Shadcn/ui
 - **AI**: Google Gemini API
 - **Data**: GitHub REST API
-- **Charts**: Recharts
-- **Animations**: Framer Motion
 
 
-## 🤝 Contributing - (WIP 🚧)
 
-We working on the contribution guideline part, meanwhile you can check docs:
+## Contributing
 
-- **[Backend Contributions](./CONTRIBUTE-BACKEND.md)** - API routes, data processing, AI integration
-- **[Frontend Contributions](./CONTRIBUTE-FRONTEND.md)** - UI components, pages, styling
+We welcome contributions! Check out our comprehensive documentation:
 
+- **[Documentation Hub](./docs/README.md)** - Complete guide to contributing and development
+- **[Architecture Overview](./docs/architecture.md)** - System design and project structure
+- **[Implementation Logic](./docs/logic.md)** - Detailed algorithms and AI integration
 
-## 🔄 API Rate Limits
-
-- **Without token**: 60 requests/hour
-- **With GitHub token**: 5000 requests/hour
-- **Built-in retry logic** for rate-limited requests
-- **Graceful fallbacks** for inaccessible data
----
 
 ---
 
 <div align="center">
 
-### 💬 Connect 
+### Connect 
 
 **Built with ❤️ for the developer community**
 
@@ -84,6 +76,6 @@ We working on the contribution guideline part, meanwhile you can check docs:
 [![GitHub](https://img.shields.io/badge/GitHub-GitCompat-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/puri-adityakumar/gitcompat)
 
 
-**⭐ Star this repo if liked the concept!**
+**Star this repo if you like the concept!**
 
 </div>

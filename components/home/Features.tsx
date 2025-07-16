@@ -1,9 +1,9 @@
-import { Brain, Users, Zap, Heart, Code, Sparkles, Database, BarChart3 } from "lucide-react"
+import { Brain, Users, Zap, Heart, Code, Sparkles, BarChart3 } from "lucide-react"
 
 export default function Features() {
   const features = [
     {
-      icon: Database,
+      icon: Code,
       title: "GitHub Data Collection",
       description: "We fetch comprehensive developer data through GitHub API, including repository statistics, commit frequency, programming languages, contribution patterns, and project collaboration metrics to create detailed profiles."
     },

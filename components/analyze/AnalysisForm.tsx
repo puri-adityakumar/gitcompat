@@ -146,7 +146,7 @@ export default function AnalysisForm({ userA, userB, onUserAChange, onUserBChang
         {
             title: "Backend × Mobile Development",
             description: "Analyzing compatibility for API development and mobile app integration",
-            prompt: "Evaluate their compatibility for mobile application development, focusing on backend API design, mobile-first thinking, and cross-platform development potential. Consider their experience with REST APIs, database design, and mobile optimization patterns."
+            prompt: "Evaluate their compatibility for mobile application development, focusing on backend API design, mobile-first thinking, and cross-platform development potential. Consider their experience with REST APIs and mobile optimization patterns."
         },
         {
             title: "Coding Crush - Tech Dating",

@@ -1,11 +1,23 @@
-import { CheckCircle, AlertTriangle, Lightbulb, BrainCircuit } from "lucide-react"
-import { CompatibilityAnalysis } from "@/lib/types"
+import {
+    CheckCircle,
+    AlertTriangle,
+    Lightbulb,
+    BrainCircuit,
+} from "lucide-react";
+import { DeveloperAnalysis, CompatibilityAnalysis } from "@/lib/types";
+import ImageGenerator from "@/components/results/ImageGenerator";
 
 interface AnalysisDetailsProps {
-    compatibility: CompatibilityAnalysis
+    userA: DeveloperAnalysis;
+    userB: DeveloperAnalysis;
+    compatibility: CompatibilityAnalysis;
 }
 
-export default function AnalysisDetails({ compatibility }: AnalysisDetailsProps) {
+export default function AnalysisDetails({
+    userA,
+    userB,
+    compatibility,
+}: AnalysisDetailsProps) {
     return (
         <>
             {/* Custom Focus Insights */}
@@ -25,6 +37,14 @@ export default function AnalysisDetails({ compatibility }: AnalysisDetailsProps)
                     </ul>
                 </div>
             )}
+
+            <div className="my-8 flex justify-center">
+                <ImageGenerator
+                    userA={userA}
+                    userB={userB}
+                    compatibility={compatibility}
+                />
+            </div>
 
             {/* Detailed Analysis */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">

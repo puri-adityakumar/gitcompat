@@ -13,9 +13,8 @@ import {
     CompatibilityScore,
     UserProfile,
     AnalysisDetails,
-    ResultsActions
-} from "@/lib/components/results"
-import ImageGenerator from "@/components/results/ImageGenerator"
+    ResultsActions,
+} from "@/lib/components/results";
 
 interface ResultsData {
     userA: DeveloperAnalysis
@@ -67,17 +66,13 @@ function ResultsContent() {
             <CompatibilityScore compatibility={compatibility} />
 
             {/* Detailed Analysis - Third */}
-            <AnalysisDetails compatibility={compatibility} />
+            <AnalysisDetails
+                userA={analysisA}
+                userB={analysisB}
+                compatibility={compatibility}
+            />
 
-            {/* Image Generation */}
-            <div className="mt-8 flex flex-row justify-center items-center gap-6">
-                <ImageGenerator 
-                    userA={analysisA} 
-                    userB={analysisB} 
-                    compatibility={compatibility} 
-                />
-                <ResultsActions />
-            </div>
+            <ResultsActions />
         </ResultsLayout>
     )
 }
